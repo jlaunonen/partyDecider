@@ -17,6 +17,11 @@ class Settings:
     # Command line, %a is replaced with admin url.
     BROWSER_CMD: str | None = None
 
+    # Command to start frontend Vite dev server when outside zipapp.
+    # %h will be replaced with HOST, %p will be replaced with VITE_DEV_PORT.
+    VITE_DEV_CMD: str | None = "npm run dev -- --host %h --port %p"
+    VITE_DEV_PORT: int = 8193
+
 
 _env = dotenv.dotenv_values("env")
 
@@ -29,7 +34,7 @@ def _interpolate(f: dataclasses.Field) -> bool | int | str:
         return parse_bool(val, f.default)
     if f.type == int:
         return int(val) if val is not None else f.default
-    return val or f.default
+    return val if val is not None else f.default
 
 
 settings = Settings(
@@ -46,6 +51,8 @@ class RuntimeConfig:
     ADMIN_URL: str
 
     IS_ZIP_APP: bool = False
+
+    VITE_DEV_URL: str | None = f"http://{settings.HOST}:{settings.VITE_DEV_PORT}"
 
 
 config = RuntimeConfig()

@@ -13,6 +13,7 @@ from pathlib import Path
 BUILD_DIR = "build"
 SRC = [
     "backend",
+    ("frontend/dist", "frontend")
 ]
 RESULT = "partyDecider.pyz"
 MAIN = "backend.__main__:main"
@@ -146,6 +147,15 @@ def compile_all():
                 print("- failed to execute:", e.args[0])
 
 
+def build_node_stuff(args):
+    with contextlib.chdir("frontend"):
+        if args.preview:
+            cmd = ["npm", "run", "preview"]
+        else:
+            cmd = ["npm", "run", "build"]
+        check_call(cmd)
+
+
 def copy_files():
     for s in SRC:
         if isinstance(s, tuple):
@@ -158,11 +168,11 @@ def copy_files():
         if os.path.isdir(src):
             print("# cp -r", src, dst)
             shutil.copytree(src, dst, dirs_exist_ok=True)
-        elif os.path.isfile(src) or os.path.islink(s):
+        elif os.path.isfile(src) or os.path.islink(src):
             print("# cp", src, dst)
             shutil.copyfile(src, dst)
         else:
-            raise FileNotFoundError(s)
+            raise FileNotFoundError(src)
 
 
 def main():
@@ -177,6 +187,11 @@ def main():
         "--quick",
         action="store_true",
         help="Do quick update of project code. Implies --keep",
+    )
+    parser.add_argument(
+        "--preview",
+        action="store_true",
+        help="Compile frontend in preview mode (without minification) instead of build.",
     )
 
     args = parser.parse_args()
@@ -204,6 +219,8 @@ import {pkg}
 
     if not args.quick:
         compile_all()
+
+        build_node_stuff(args)
 
     copy_files()
 

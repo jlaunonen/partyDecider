@@ -1,0 +1,7 @@
+/.idea
+/build
+/db.csv
+/env
+/venv
+__pycache__
+*.pyz

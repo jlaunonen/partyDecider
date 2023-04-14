@@ -1,0 +1,139 @@
+@startuml classes
+' Front definitions
+hide empty members
+!$async = "<i>async</i>"
+!$http = "<i>async http</i>"
+!unquoted procedure $module($name)
+  package $name <<Rectangle>>
+!endprocedure
+
+' --- Actual graph script: ---
+
+entity entrypoint as "__main__"
+
+class Settings {
+    DEBUG : bool
+    HOST : str
+    PORT : int
+}
+
+entity main {
+    app : FastAPI
+    $async lifecycle()
+    database_middleware(..)
+    $http root(Database)
+}
+
+entity admin {
+    router : APIRouter
+    $http get_all(Database)
+    $http get_enabled(Database)
+    $http set_enabled(Database, list[int])
+    $http shutdown()
+}
+
+entity crud {
+    get_apps(..)
+    set_enabled(..)
+}
+
+entity db {
+    connect()
+    disconnect()
+    $async lifecycle()
+    request_database(Request) : AsyncSession
+    $async finish_request(Request)
+}
+
+class AsyncSession {
+    db
+}
+
+db ..> AsyncSession : creates
+crud --> db
+main ..> db
+entrypoint ..> Settings
+main --> admin : includes
+
+$module(models) {
+    class AppItem <<dataclass>> {
+        id : int
+        steam_id : int
+        name : str
+        enabled : bool
+    }
+}
+
+$module(schemas) {
+    class Message {
+        success : bool
+        message : str
+        ok() : Message
+    }
+    class App {
+        id : int
+        steam_id : int
+        name : bool
+    }
+}
+
+entity dependencies {
+    $async require_admin(Request)
+    Database : Annotated[AsyncSession, Depends]
+}
+
+admin .. dependencies
+main .. dependencies
+admin .. crud
+dependencies ..> db
+
+
+package platforms {
+    interface PlatformBase {
+        get_hostname() : str
+        get_ips() : list[str]
+        spawn_browser(str, str)
+    }
+    class linux:Platform
+    class mac:Platform
+    class windows:Platform
+    PlatformBase <|-- "linux:Platform"
+    PlatformBase <|-- "mac:Platform"
+    PlatformBase <|-- "windows:Platform"
+}
+
+
+
+@enduml
+
+@startuml components
+package partyDecider_pyz {
+    component Backend
+    component Frontend
+    interface http
+}
+
+Backend -- http
+Backend -- inMemory
+Backend -- csv
+Backend <- Steam
+Frontend ..> http : use
+
+database inMemory {
+    folder ballot
+    folder votingSession
+}
+
+database csv {
+    folder apps
+}
+
+folder Steam {
+    node AppInfo_vdf
+    node AppManifests
+    node AppIconCache
+}
+
+Steam ..> apps
+
+@enduml

@@ -1,122 +1,94 @@
 <script lang="ts">
-    import {ItemInfo, Level} from "./models";
-    import VoteGridLevel from "./VoteGridLevel.svelte";
+    import VoteGridLevel from "./VoteGridLevel.svelte"
+    import {DragTargetManager, handlers} from "./dragLib"
+    import {Level, Poll} from "./models"
+    import type {PollProps} from "./models"
 
-    const dragStuff = () => {
+    import {apiConfig} from "../network"
+    import {PublicApi, ResourcesApi} from "../api"
+    import {EditHistory} from "./editHistory"
 
-        let dragSrcEl;
+    const api = new PublicApi(apiConfig)
+    const resourcesApi = new ResourcesApi(apiConfig)
 
-        function handleDragStart(e) {
-            this.style.opacity = '0.4';
-            console.log(e);
-            dragSrcEl = this;
-            e.dataTransfer.effectAllowed = "move";
-            e.dataTransfer.setData("text/html", this.innerHTML);
+    let poll: Poll
+    let voteGrid: Array<Level> = []
+    const history = new EditHistory<PollProps>()
+
+    async function fetchGames(): Promise<void> {
+        const enabled = await api.getApps();
+        poll = new Poll(enabled)
+        voteGrid = poll.getLevels()
+        // Push initial state.
+        history.replaceWith(poll.copy())
+        updateButtons()
+    }
+
+    let promise = fetchGames();
+
+    function updateGames() {
+        promise = fetchGames();
+    }
+
+    handlers.onEnd = () => {
+        voteGrid = poll.getLevels()
+    }
+
+    const dropTargetHandler = new DragTargetManager();
+    dropTargetHandler.onComplete = (dragged, target) => {
+        if (poll.move(dragged.dragId, target.dragId)) {
+            history.push(poll.copy())
+            updateButtons()
         }
+    }
 
-        function handleDragEnd(e) {
-            this.style.opacity = '1';
-            console.log(e);
-            items.forEach(function (item) {
-                item.classList.remove('over');
-            });
+    function undo() {
+        const newState = history.undo()
+        if (newState !== null) {
+            poll.setState(newState)
+            voteGrid = poll.getLevels()
         }
+        updateButtons()
+    }
 
-        function handleDragOver(e) {
-            e.preventDefault();
-            return false;
+    function redo() {
+        const newState = history.redo()
+        if (newState !== null) {
+            poll.setState(newState)
+            voteGrid = poll.getLevels()
         }
+        updateButtons()
+    }
 
-        function handleDragEnter(e) {
-            this.classList.add('over');
-        }
+    type Disabled = "disabled" | ""
+    let undoDisabled: Disabled = "disabled"
+    let redoDisabled: Disabled = "disabled"
 
-        function handleDragLeave(e) {
-            this.classList.remove('over');
-        }
+    function updateButtons() {
+        undoDisabled = history.canUndo() ? "" : "disabled"
+        redoDisabled = history.canRedo() ? "" : "disabled"
+    }
 
-        function handleDrop(e) {
-            console.log(e);
-            e.stopPropagation();
-
-            if (dragSrcEl !== this) {
-                dragSrcEl.innerHTML = this.innerHTML;
-                this.innerHTML = e.dataTransfer.getData("text/html");
-            }
-            return false;
-        }
-
-
-        let items = document.querySelectorAll('.container .box');
-        items.forEach(function (item) {
-            item.addEventListener('dragstart', handleDragStart);
-            item.addEventListener('dragend', handleDragEnd);
-            item.addEventListener('dragover', handleDragOver);
-            item.addEventListener('dragenter', handleDragEnter);
-            item.addEventListener('dragleave', handleDragLeave);
-            item.addEventListener("drop", handleDrop);
-        });
-
-        return {}
-    };
-
-    const voteGrid: Array<Level> = [
-        new Level("1.", [
-            new ItemInfo("Portal 2"),
-            new ItemInfo("Portal 2"),
-            new ItemInfo("Portal 2"),
-            new ItemInfo("Portal 2"),
-            new ItemInfo("Portal 2"),
-            new ItemInfo("Portal 2"),
-            new ItemInfo("Portal 2"),
-            new ItemInfo("Portal 2"),
-            new ItemInfo("Portal 2"),
-        ]),
-        new Level("2.", [
-            new ItemInfo("Portal 2"),
-        ]),
-        new Level("3.", [
-            new ItemInfo("Portal 2"),
-            new ItemInfo("Portal 2"),
-        ]),
-        new Level("4."),
-        new Level("no vote", [
-            new ItemInfo("Portal 2"),
-        ]),
-    ];
 </script>
 
-
-<div class="container">
-    {#each voteGrid as level}
-        <VoteGridLevel name={level.name} items={level.items}/>
-    {/each}
+<div class="container my-4">
+    <div class="btn-group">
+        <button type="button" class="btn btn-secondary" disabled={undoDisabled} on:click={undo}>Undo</button>
+        <button type="button" class="btn btn-secondary" disabled={redoDisabled} on:click={redo}>Redo</button>
+    </div>
+    {#await promise}
+        <div class="text-muted">
+            Loading...
+        </div>
+    {:then _}
+        {#each voteGrid as level, index}
+            <VoteGridLevel level={level} dropTargetHandler={dropTargetHandler} resourcesApi={resourcesApi}/>
+        {/each}
+    {/await}
 </div>
-<div class="container" use:dragStuff>
-    <div draggable="true" class="box">A</div>
-    <div draggable="true" class="box">B</div>
-    <div draggable="true" class="box">C</div>
-</div>
-
 
 <style>
-    .container {
-        counter-reset: itemindex;
-    }
-
-    .box:before {
-        content: counter(itemindex) ": ";
-    }
-
-    .box {
-        counter-increment: itemindex;
-        border: 3px solid #666;
-        border-radius: .5em;
-        padding: 10px;
-        cursor: move;
-    }
-
-    .box:global(.over) {
-        border: 3px dotted #666;
+    .btn-group {
+        margin-bottom: 1em;
     }
 </style>

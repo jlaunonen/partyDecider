@@ -3,7 +3,7 @@ import signal
 import typing
 
 import anyio
-from fastapi import APIRouter, Body, Depends, HTTPException
+from fastapi import APIRouter, Body, Depends, HTTPException, Query
 
 from . import crud, schemas
 from .dependencies import Database, require_admin
@@ -42,11 +42,16 @@ async def get_enabled(db: Database) -> list[schemas.App]:
     summary="Set enabled apps/games",
 )
 async def set_enabled(
-    db: Database, items: typing.Annotated[list[int], Body()]
+    db: Database,
+    items: typing.Annotated[list[int], Body()],
+    by_steam_id: typing.Annotated[bool, Query()] = False,
 ) -> schemas.Message:
-    """List of ID's (not Steam ID's) that should be enabled for voting."""
+    """List of ID's (or Steam-ID's if by_steam_id is true) that should be enabled for voting."""
     try:
-        crud.set_enabled(db, items)
+        if by_steam_id:
+            crud.set_enabled_by_steam_id(db, items)
+        else:
+            crud.set_enabled(db, items)
     except KeyError as e:
         raise HTTPException(422, detail=e.args[0])
     return schemas.Message.ok()

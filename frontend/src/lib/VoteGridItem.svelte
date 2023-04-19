@@ -1,22 +1,37 @@
 <script lang="ts">
-    export let name: string
-    export let steam_id: number | null
+    import {mountSource} from "./dragLib"
+    import type {ItemInfo} from "./models"
+    import {ResourcesApi} from "../api"
+    import type {App} from "../api"
 
+    export let item: ItemInfo
+
+    export let resourcesApi: ResourcesApi
+
+    function imageSrc(app: App): string {
+        return resourcesApi.resIcon_Path({appId: app.steamId});
+    }
 </script>
 
-<div draggable="true" class="col-lg-2 col-4 pd-item py-2">
-    {#if steam_id}
-        <img class="float-start" src="/{steam_id}_icon.jpg" alt="icon"/>
+<div draggable="true" class="col-lg-3 col-6 pd-item py-2" use:mountSource data-dragId={item.dragId}>
+    {#if item.data.steamId}
+        <img class="float-end" src={imageSrc(item.data)} alt="icon"/>
     {/if}
-    {name}
+    {item.name}
 </div>
 
 <style>
     .pd-item {
         border: 1px solid gray;
+        border-radius: var(--bs-card-inner-border-radius) var(--bs-card-inner-border-radius) var(--bs-card-inner-border-radius) var(--bs-card-inner-border-radius);
+        cursor: move;
+    }
+    .pd-item:global(.dragging) {
+        opacity: 0.5;
     }
 
     img {
-        margin-inline-end: 0.6em;
+        margin-top: 0.3em;
+        margin-inline-start: 0.6em;
     }
 </style>

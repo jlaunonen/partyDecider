@@ -2,10 +2,13 @@ import os
 import signal
 import typing
 
+import anyio
 from fastapi import APIRouter, Body, Depends, HTTPException
 
 from . import crud, schemas
 from .dependencies import Database, require_admin
+from .vdf.game_gatherer import main as game_gatherer
+
 
 router = APIRouter(
     dependencies=[Depends(require_admin)],
@@ -47,6 +50,15 @@ async def set_enabled(
     except KeyError as e:
         raise HTTPException(422, detail=e.args[0])
     return schemas.Message.ok()
+
+
+@router.post(
+    "/rescan",
+    summary="Rescan all installed apps/games",
+)
+async def rescan_games(db: Database) -> int:
+    games = await anyio.to_thread.run_sync(game_gatherer, lambda a, b: None)
+    return crud.set_apps(db, games)
 
 
 @router.get(

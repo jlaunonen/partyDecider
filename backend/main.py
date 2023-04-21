@@ -9,6 +9,7 @@ from .admin import router as admin_router
 from .db import finish_request
 from .db import lifecycle as db_lifecycle
 from .platforms import Platform
+from .resources import router as resources_router
 from .frontend_integration import ZipStaticFiles, lifecycle as hmr_lifecycle
 
 
@@ -49,6 +50,7 @@ if not config.IS_ZIP_APP:
     )
 
 app.include_router(admin_router, prefix="/api/admin")
+app.include_router(resources_router, prefix="/res")
 
 
 @app.middleware("http")
@@ -61,9 +63,20 @@ async def database_middleware(request: Request, call_next) -> Response:
 if config.IS_ZIP_APP:
     app.mount("/", ZipStaticFiles())
 else:
-    print("Root path is expecting frontend server to be found at", f"{config.VITE_DEV_URL}?port={settings.PORT}")
+    print(
+        "Root path is expecting frontend server to be found at",
+        f"{config.VITE_DEV_URL}?port={settings.PORT}",
+    )
 
-    @app.get("/", status_code=307)
+    @app.get(
+        "/",
+        response_class=RedirectResponse,
+        include_in_schema=False,
+    )
     async def root() -> RedirectResponse:
+        """
+        Development redirect to HMR frontend.
+        In zipapp, root path is mounted to serve compiled frontend.
+        """
         url = config.VITE_DEV_URL + f"?port={settings.PORT}"
         return RedirectResponse(url)

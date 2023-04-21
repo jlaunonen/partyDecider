@@ -60,3 +60,13 @@ class Platform(PlatformBase):
                         ips.append(addr)
 
         return ips
+
+    @classmethod
+    def get_steam_root(cls) -> str | None:
+        for path in (".steam", ".steam/steam", ".steam/root", ".local/share/Steam"):
+            if (
+                os.path.isdir(path)
+                and os.path.isdir(path + "/config")
+                and os.path.isdir(path + "/appcache")
+            ):
+                return path

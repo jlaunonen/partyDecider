@@ -26,3 +26,17 @@ def set_enabled(session: AsyncSession, ids: list[int]):
     id_set = set(ids)
     for app in session.db.apps.values():
         app.enabled = app.id in id_set
+
+
+def set_apps(session: AsyncSession, games: list[dict[str, str | int]]) -> int:
+    new_apps: dict[int, models.AppItem] = {}
+    for index, game in enumerate(games, start=1):
+        new_apps[index] = models.AppItem(
+            id=index,
+            steam_id=game["appid"],
+            name=game["name"],
+            enabled=True,  # TODO: Remove non-default
+        )
+
+    session.db.apps = new_apps
+    return len(new_apps)

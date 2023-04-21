@@ -14,6 +14,10 @@ class PlatformBase:
     def get_ips(cls) -> list[str]:
         raise NotImplementedError
 
+    @classmethod
+    def get_steam_root(cls) -> str | None:
+        raise NotImplementedError
+
 
 if sys.platform.startswith("linux"):
     from .linux import Platform

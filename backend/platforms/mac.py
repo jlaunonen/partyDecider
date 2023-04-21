@@ -1,6 +1,6 @@
-from . import PlatformBase
+from .linux import Platform as LinuxPlatform
 
 
-class Platform(PlatformBase):
+class Platform(LinuxPlatform):
     # TODO
     pass

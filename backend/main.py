@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import contextlib
 
 from fastapi import FastAPI, Request, Response
@@ -9,8 +11,10 @@ from .admin import router as admin_router
 from .db import finish_request
 from .db import lifecycle as db_lifecycle
 from .platforms import Platform
+from .public import router as public_router
 from .resources import router as resources_router
 from .frontend_integration import ZipStaticFiles, lifecycle as hmr_lifecycle
+from .openapi import use_route_names_as_operation_ids
 
 
 tags_metadata = [
@@ -50,6 +54,7 @@ if not config.IS_ZIP_APP:
     )
 
 app.include_router(admin_router, prefix="/api/admin")
+app.include_router(public_router, prefix="/api")
 app.include_router(resources_router, prefix="/res")
 
 
@@ -80,3 +85,7 @@ else:
         """
         url = config.VITE_DEV_URL + f"?port={settings.PORT}"
         return RedirectResponse(url)
+
+
+# Provide sane names for api functions for client.
+use_route_names_as_operation_ids(app)

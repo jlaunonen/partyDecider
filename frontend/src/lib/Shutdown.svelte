@@ -1,8 +1,11 @@
 <script lang="ts">
-    import {getBaseUrl} from "../network";
+    import {apiConfig} from "../network"
+    import {AdminApi} from "../api"
+
+    const api = new AdminApi(apiConfig)
 
     async function shutdown() {
-        console.log(await fetch(getBaseUrl() + "/api/admin/shutdown"));
+        console.log(await api.shutdown())
     }
 </script>
 

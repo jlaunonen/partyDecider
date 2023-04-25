@@ -1,25 +1,23 @@
 <script lang="ts">
-    import {getBaseUrl} from "../network";
+    import {apiConfig} from "../network";
+    import {AdminApi, ResourcesApi} from "../api";
+    import type {App} from "../api";
 
-    async function fetchGames() {
-        const result = await fetch(getBaseUrl() + "/api/admin/enabled")
-        if (result.ok) {
-            const data: Array<any> = await result.json();
-            const newGames: Array<string> = []
-            for (let index in data) {
-                let game = data[index];
-                newGames.push(game.name);
-            }
-            return newGames;
-        } else {
-            throw new Error(result.statusText);
-        }
+    const api = new AdminApi(apiConfig);
+    const resourcesApi = new ResourcesApi(apiConfig);
+
+    async function fetchGames(): Promise<Array<App>> {
+        return await api.getEnabled();
     }
 
     let promise = fetchGames();
 
     function updateGames() {
         promise = fetchGames();
+    }
+
+    function imageSrc(app: App): string {
+        return resourcesApi.resIcon_Path({appId: app.steamId});
     }
 </script>
 
@@ -32,7 +30,7 @@
     {:then games}
         <ul id="games" class="list-group list-group-flush">
             {#each games as game}
-                <li class="list-group-item">{game}</li>
+                <li class="list-group-item"><img src={imageSrc(game)} alt="icon" /> {game.name}</li>
             {:else}
                 <li class="list-group-item text-danger">No games</li>
             {/each}

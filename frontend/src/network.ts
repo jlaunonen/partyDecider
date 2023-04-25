@@ -1,3 +1,5 @@
+import {Configuration} from "./api";
+
 function initPort() {
     if (__ALLOW_ALT_PORT__) {
         return new URL(location.href).searchParams.get("port")
@@ -17,6 +19,9 @@ export function getBaseUrl(): string {
     return location.origin;
 }
 
+export const apiConfig = new Configuration({
+    basePath: getBaseUrl(),
+});
 
 export function makeLink(link: string): string {
     if (__ALLOW_ALT_PORT__) {

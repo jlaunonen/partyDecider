@@ -1,11 +1,13 @@
 <script lang="ts">
-    import {getBaseUrl} from "../network";
+    import {apiConfig} from "../network"
+    import {AdminApi} from "../api"
+
+    const api = new AdminApi(apiConfig)
 
     async function rescan() {
         this.disabled = true
         try {
-            const response = await fetch(getBaseUrl() + "/api/admin/rescan", {method: "POST"})
-            const count = await response.text()
+            const count = await api.rescanGames()
             alert(`Found ${count} games`)
         } catch (e) {
             alert(e)

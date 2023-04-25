@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite build --mode preview",
-    "check": "svelte-check --tsconfig ./tsconfig.json"
+    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "generate-api": "openapi-generator-cli generate -g typescript-fetch -t openapi-overrides/ -o src/api/ -i http://127.0.0.1:8192/openapi.json"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^2.0.3",
@@ -21,5 +22,8 @@
   "dependencies": {
     "bootstrap": "^5.2.3",
     "svelte-routing": "^1.6.0"
+  },
+  "optionalDependencies": {
+    "@openapitools/openapi-generator-cli": "^2.6.0"
   }
 }

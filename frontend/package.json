@@ -19,6 +19,7 @@
     "vite": "^4.2.0"
   },
   "dependencies": {
-    "bootstrap": "^5.2.3"
+    "bootstrap": "^5.2.3",
+    "svelte-routing": "^1.6.0"
   }
 }

@@ -25,7 +25,7 @@
 
 <div class="card">
     <div class="card-header">
-        Games from backend <a type="button" href="javascript:void(0)" on:click={updateGames}>Refresh</a>
+        Games from backend <button type="button" class="btn btn-link" on:click={updateGames}>Refresh</button>
     </div>
     {#await promise}
         <div class="card-body">…</div>
@@ -41,3 +41,10 @@
         <div class="card-body">Error getting games: {e.message}</div>
     {/await}
 </div>
+
+<style>
+    button {
+        padding: 2px 4px 2px 4px;
+        vertical-align: baseline;
+    }
+</style>

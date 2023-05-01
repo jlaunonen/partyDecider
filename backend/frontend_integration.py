@@ -31,22 +31,25 @@ async def lifecycle():
         )
 
         def runner():
-            with contextlib.chdir("frontend"):
-                proc = subprocess.Popen(
-                    cmd, stdout=sys.stdout, stderr=sys.stderr, shell=True
-                )
-                while not interrupt and proc.poll() is None:
-                    try:
-                        proc.communicate(timeout=1)
-                    except subprocess.TimeoutExpired:
-                        pass
-                print("Stopping vite...")
-                proc.terminate()
+            proc = subprocess.Popen(
+                cmd,
+                stdout=sys.stdout,
+                stderr=sys.stderr,
+                shell=True,
+                cwd="frontend",
+            )
+            while not interrupt and proc.poll() is None:
                 try:
-                    proc.wait(2)
+                    proc.communicate(timeout=1)
                 except subprocess.TimeoutExpired:
-                    print("Killing vite...")
-                    proc.kill()
+                    pass
+            print("Stopping vite...")
+            proc.terminate()
+            try:
+                proc.wait(2)
+            except subprocess.TimeoutExpired:
+                print("Killing vite...")
+                proc.kill()
 
         thread = threading.Thread(target=runner, name="Vite")
         thread.start()

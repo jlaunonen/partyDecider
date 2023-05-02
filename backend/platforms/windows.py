@@ -14,6 +14,21 @@ class Platform(PlatformBase):
     REG_KEY = r"SOFTWARE\Valve\Steam"
 
     # TODO
+
+    @classmethod
+    def spawn_browser(cls, cmdline: str | None, admin_url: str):
+        print("** Browser spawning support is not implemented **")
+
+    @classmethod
+    def get_hostname(cls) -> str:
+        print("** Hostname resolution support is not implemented **")
+        return "localhost"
+
+    @classmethod
+    def get_ips(cls) -> list[str]:
+        print("** IP resolution support is not implemented **")
+        return ["127.0.0.1"]
+
     @classmethod
     def get_steam_root(cls) -> str | None:
         hkey = open_key_or_none(

@@ -42,6 +42,14 @@ export function iterToArray<T>(src: Iterable<T>): Array<T> {
     return r
 }
 
+export function mapIterToArray<T, R>(src: Iterable<T>, map: (val: T) => R): Array<R> {
+    const r = new Array<R>()
+    for (const value of src) {
+        r.push(map(value))
+    }
+    return r
+}
+
 export function ValToString<T>(val: T): string {
     return val.toString()
 }
@@ -62,4 +70,32 @@ export function joinToString<K, V>(src: ForEachable<K, V>, map: (val: V, key: K)
         r += map(val, key)
     })
     return r
+}
+
+class RepeatIterator implements Iterator<number> {
+    private value: number
+
+    constructor(
+        private readonly stop: number,
+        start: number,
+    ) {
+        this.value = start
+    }
+
+    next(): IteratorResult<number> {
+        const val = this.value
+        this.value++
+        return {
+            done: val >= this.stop,
+            value: val,
+        };
+    }
+}
+
+export function repeat(stop: number, start: number = 0): Iterable<number> {
+    return {
+        [Symbol.iterator](): Iterator<number> {
+            return new RepeatIterator(stop, start)
+        }
+    }
 }

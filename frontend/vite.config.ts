@@ -13,6 +13,7 @@ export default defineConfig(({command, mode}) => {
     plugins: [svelte()],
     define: {
       __ALLOW_ALT_PORT__: development ? "true" : "false",
+      __IS_DEVELOPMENT__: development ? "true" : "false",
     },
     build: {
       minify: mode !== "production" ? false : "esbuild",

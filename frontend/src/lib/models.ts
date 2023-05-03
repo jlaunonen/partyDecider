@@ -1,7 +1,18 @@
 import type {App} from "../api";
-import {flatEachToMap, Identity, iterToArray, eachToArray, eachToMap, MapIdentity} from "./itertools";
+import {
+    flatEachToMap,
+    Identity,
+    iterToArray,
+    eachToArray,
+    eachToMap,
+    MapIdentity,
+    repeat,
+    mapIterToArray
+} from "./itertools";
 
 const DEBUG = false
+
+const MIN_LEVEL_COUNT = 3
 
 let uniqueIndex = 0;
 function newId(prefix: string): string {
@@ -104,13 +115,11 @@ export class Poll {
                     )
                 ]
             })
+            const levels: Array<Level> = mapIterToArray(repeat(MIN_LEVEL_COUNT), (index) =>
+                new Level(`${index + 1}.`, index)
+            )
             const noVote = new Level("no vote", -1, iterToArray(items.values()))
-            const levels = [
-                new Level("1.", 0),
-                new Level("2.", 1),
-                new Level("3.", 2),
-                noVote,
-            ]
+            levels.push(noVote)
 
             this.state = {
                 items: items,
@@ -140,6 +149,19 @@ export class Poll {
 
     getLevels(): Array<Level> {
         return this.levels
+    }
+
+    getBallot(): Map<number, number> {
+        const ballot: Map<number, number> = new Map()
+        this.levels.forEach((level) => {
+            // We don't care items that are not voted.
+            if (level.levelIndex >= 0) {
+                level.items.forEach((e) => {
+                    ballot.set(e.data.id, level.levelIndex + 1)
+                })
+            }
+        })
+        return ballot
     }
 
     /** Returns `true` if state changed. */
@@ -219,7 +241,7 @@ export class Poll {
 
             // Move items to new level
             const newLevel = new Level("", newIndex, iterToArray(itemLevel.items))
-            itemLevel.items.splice(0, itemLevel.items.length)
+            itemLevel.items.splice(0)
 
             // Update items' level
             newLevel.items.forEach((e) => {
@@ -241,7 +263,7 @@ export class Poll {
 
             // Move the items to the new level.
             dropTargetLevel.items.push(...itemLevel.items)
-            itemLevel.items.splice(0, itemLevel.items.length)
+            itemLevel.items.splice(0)
         }
 
         if (DEBUG) console.log(this.copy())
@@ -249,19 +271,27 @@ export class Poll {
     }
 
     private addLevel(newLevel: Level, newIndex: number) {
-        this.targetLevels.set(newLevel.dropId, newLevel)
-        this.targetLevels.set(newLevel.upOneDropId, newLevel)
+        this.registerLevel(newLevel)
         this.levels.splice(newIndex, 0, newLevel)
         this.updateLevelIndices()
     }
 
+    private registerLevel(newLevel: Level) {
+        this.targetLevels.set(newLevel.dropId, newLevel)
+        this.targetLevels.set(newLevel.upOneDropId, newLevel)
+    }
+
     private removeLevel(level: Level, update: boolean = true) {
-        this.targetLevels.delete(level.dropId)
-        this.targetLevels.delete(level.upOneDropId)
+        this.unregisterLevel(level)
         this.levels.splice(this.levels.indexOf(level), 1)
         if (update) {
             this.updateLevelIndices()
         }
+    }
+
+    private unregisterLevel(level: Level) {
+        this.targetLevels.delete(level.dropId)
+        this.targetLevels.delete(level.upOneDropId)
     }
 
     private updateLevelIndices() {
@@ -271,5 +301,51 @@ export class Poll {
                 e.updateIndex(index)
             }
         })
+    }
+
+    collapseEmpty(): boolean {
+        const removeStack: Array<Level> = []
+        const toRemove: Array<Level> = []
+        const newLevels: Array<Level> = []
+        this.levels.forEach((e) => {
+            if (e.levelIndex >= 0) {
+                if (e.items.length == 0) {
+                    removeStack.push(e)
+                } else {
+                    newLevels.push(e)
+                    if (removeStack.length) {
+                        toRemove.push(...removeStack)
+                        removeStack.splice(0)
+                    }
+                }
+            }
+        })
+
+        // If needed, firstly add already existing empty levels back.
+        if (removeStack.length) {
+            for (let i: number = newLevels.length; i < MIN_LEVEL_COUNT && removeStack.length; i++) {
+                newLevels.push(removeStack.shift())
+            }
+            toRemove.push(...removeStack)
+        }
+        // If needed, add new empty levels.
+        for (let i: number = newLevels.length; i < MIN_LEVEL_COUNT; i++) {
+            const newLevel = new Level("", 0)
+            newLevels.push(newLevel)
+            this.registerLevel(newLevel)
+        }
+
+        newLevels.push(this.levels[this.levels.length - 1])  // "no vote" level
+        toRemove.forEach((e) => {
+            this.unregisterLevel(e)
+        })
+        this.state.levels = newLevels
+        this.updateLevelIndices()
+
+        if (toRemove.length) {
+            this.updateLevelIndices()
+            return true
+        }
+        return false
     }
 }

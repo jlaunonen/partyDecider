@@ -7,3 +7,5 @@
  * See also network.ts.
  */
 declare const __ALLOW_ALT_PORT__: boolean
+
+declare const __IS_DEVELOPMENT__: boolean

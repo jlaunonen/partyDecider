@@ -7,6 +7,8 @@
     import {apiConfig} from "../network"
     import {PublicApi, ResourcesApi} from "../api"
     import {EditHistory} from "./editHistory"
+    import {joinToString, PairToString} from "./itertools.js";
+    import {IS_DEVELOPMENT} from "./build.js";
 
     const api = new PublicApi(apiConfig)
     const resourcesApi = new ResourcesApi(apiConfig)
@@ -14,6 +16,10 @@
     let poll: Poll
     let voteGrid: Array<Level> = []
     const history = new EditHistory<PollProps>()
+
+    if (IS_DEVELOPMENT) {
+        history.listener = () => console.log("History:", history.toString())
+    }
 
     async function fetchGames(): Promise<void> {
         const enabled = await api.getApps();
@@ -69,12 +75,23 @@
         redoDisabled = history.canRedo() ? "" : "disabled"
     }
 
+    function collapse() {
+        if (poll.collapseEmpty()) {
+            history.push(poll.copy())
+            voteGrid = poll.getLevels()
+            updateButtons()
+        }
+    }
+
 </script>
 
 <div class="container my-4">
-    <div class="btn-group">
+    <div class="btn-group" role="group">
         <button type="button" class="btn btn-secondary" disabled={undoDisabled} on:click={undo}>Undo</button>
         <button type="button" class="btn btn-secondary" disabled={redoDisabled} on:click={redo}>Redo</button>
+    </div>
+    <div class="btn-group" role="group">
+        <button type="button" class="btn btn-outline-secondary" on:click={collapse}>Collapse empty</button>
     </div>
     {#await promise}
         <div class="text-muted">
@@ -85,6 +102,11 @@
             <VoteGridLevel level={level} dropTargetHandler={dropTargetHandler} resourcesApi={resourcesApi}/>
         {/each}
     {/await}
+    {#if poll && IS_DEVELOPMENT}
+        <!-- voteGrid referred only to make this reactive on that -->
+        <!--suppress CommaExpressionJS -->
+        <div>Ballot: {voteGrid, joinToString(poll.getBallot(), PairToString)}</div>
+    {/if}
 </div>
 
 <style>

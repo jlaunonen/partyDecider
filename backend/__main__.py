@@ -17,12 +17,13 @@ def main():
     # Expect: Environment variables are inherited to child processes.
     os.environ["X_SERV_PID"] = str(os.getpid())
 
+    use_reload = settings.DEBUG and not config.IS_ZIP_APP
     uvicorn.run(
         "backend.main:app",
         host=settings.HOST,
         port=settings.PORT,
-        reload=settings.DEBUG and not config.IS_ZIP_APP,
-        reload_dirs="backend",
+        reload=use_reload,
+        reload_dirs="backend" if use_reload else None,
     )
 
 

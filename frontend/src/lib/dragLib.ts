@@ -23,7 +23,7 @@ function handleStart(e: DragEvent) {
     if (DEBUG) console.log("Start:", value, debugElement(element));
 }
 
-export const handlers : {onEnd: any} = {
+export const handlers : {onEnd: (() => void) | null} = {
     onEnd: null
 }
 
@@ -95,9 +95,11 @@ export class DragTargetManager {
         return false
     }
 
-    private handleDragEnter(_: DragEvent, el: HTMLElement) {
+    private handleDragEnter(e: DragEvent, el: HTMLElement) {
         this.overed.add(el)
         el.classList.add("over")
+        // Needed for at least Chrome 112 to avoid randomly failing to proceed to drop.
+        e.preventDefault()
     }
 
     private handleDragLeave(_: DragEvent, el: HTMLElement) {

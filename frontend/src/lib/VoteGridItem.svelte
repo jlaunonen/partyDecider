@@ -15,7 +15,7 @@
 
 <div draggable="true" class="col-lg-3 col-6 pd-item py-2" use:mountSource data-dragId={item.dragId}>
     {#if item.data.steamId}
-        <img class="float-end" src={imageSrc(item.data)} alt="icon"/>
+        <img draggable="false" class="float-end" src={imageSrc(item.data)} alt="icon"/>
     {/if}
     {item.name}
 </div>

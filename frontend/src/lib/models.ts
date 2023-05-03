@@ -224,12 +224,16 @@ export class Poll {
 
         if (DEBUG) console.log(itemLevel, originalIndex, "->", dropTargetLevel)
         if (itemLevel === dropTargetLevel) {
-            // Logically same place.
+            // Logically same place: Between this and one above.
             return false
         }
 
         if (dropTargetLevel.upOneDropId === target) {
-            // TODO: If level from one above is moved to this, nothing really changes and state should not be considered changed.
+            if (this.levels.indexOf(dropTargetLevel) == originalIndex + 1) {
+                // Logically same place: Between this and one below.
+                return false
+            }
+
             // Level moved between levels (or to first)
             let newIndex: number
             if (dropTargetLevel.levelIndex === -1) {

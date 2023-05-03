@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
 
 import contextlib
+import re
+from urllib.parse import urlparse, urlunparse
 
 from fastapi import FastAPI, Request, Response
+from fastapi.exception_handlers import http_exception_handler
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
+
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from . import config, settings
 from .admin import router as admin_router
@@ -65,8 +70,33 @@ async def database_middleware(request: Request, call_next) -> Response:
     return response
 
 
+FRONTEND_PATHS = (
+    re.compile(r"/$"),
+    re.compile(r"/(admin|default)$"),
+)
+
+
+def frontend_converter(path: str) -> str | None:
+    for p in FRONTEND_PATHS:
+        if p.match(path) is not None:
+            break
+    else:
+        return
+
+    if path == "/":
+        path = ""
+
+    if config.IS_ZIP_APP:
+        # In zipapp, we probably don't have dev url at all, but the path is still valid.
+        return path
+
+    base_url = config.VITE_DEV_URL + f"?port={settings.PORT}"
+    result_url = urlparse(base_url)._replace(path=path)
+    return urlunparse(result_url)
+
+
 if config.IS_ZIP_APP:
-    app.mount("/", ZipStaticFiles())
+    app.mount("/", ZipStaticFiles(frontend_converter))
 else:
     print(
         "Root path is expecting frontend server to be found at",
@@ -85,6 +115,20 @@ else:
         """
         url = config.VITE_DEV_URL + f"?port={settings.PORT}"
         return RedirectResponse(url)
+
+    @app.exception_handler(StarletteHTTPException)
+    async def not_found_handler(request: Request, exc: StarletteHTTPException):
+        # If the 404 path is a path handled by frontend routing, redirect to (dev) frontend instead.
+        # In zipapp, this is handled in the ZipStaticFiles separately.
+        path = request.url.path
+        if exc.status_code != 404 or request.method != "GET" or path.startswith("/api/") or path.startswith("/res/"):
+            return await http_exception_handler(request, exc)
+
+        converted_path = frontend_converter(path)
+        if converted_path is None:
+            return await http_exception_handler(request, exc)
+
+        return RedirectResponse(converted_path)
 
 
 # Provide sane names for api functions for client.

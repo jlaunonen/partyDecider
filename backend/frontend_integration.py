@@ -2,6 +2,7 @@ from email.utils import format_datetime
 import contextlib
 import datetime
 import os
+import re
 import sys
 import hashlib
 import importlib.util
@@ -62,7 +63,7 @@ async def lifecycle():
 
 
 class ZipStaticFiles:
-    def __init__(self):
+    def __init__(self, frontend_converter: typing.Callable[[str], str | None]):
         # Assumption: backend and frontend are provided from same archive.
         # Assumption: We are in a zipapp.
         spec = importlib.util.find_spec("backend")
@@ -75,6 +76,7 @@ class ZipStaticFiles:
                 available_files[name] = info
 
         self._available_files = available_files
+        self._frontend_converter = frontend_converter
 
     def __del__(self):
         if self._zip is not None:
@@ -94,7 +96,11 @@ class ZipStaticFiles:
 
         info = self._available_files.get(p) or self._available_files.get(pindex)
         if info is None:
-            raise HTTPException(status_code=404)
+            original_path = scope["path"]  # This contains preceding / which is missing from path.
+            converted_path = self._frontend_converter(original_path)
+            if converted_path is None:
+                raise HTTPException(status_code=404)
+            info = self._available_files.get("frontend/index.html")
 
         return ZipFileResponse(
             info=info,

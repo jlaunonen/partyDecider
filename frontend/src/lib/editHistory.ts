@@ -1,8 +1,12 @@
+import {joinToString, ValToString} from "./itertools";
+
 const MAX_LENGTH = 30
 
 export class EditHistory<Item> {
     private states: Array<Item> = []
     private undoPos: number = -1
+
+    listener: ((history: EditHistory<Item>) => void) | null = null
 
     get pos(): number {
         return this.undoPos
@@ -11,6 +15,7 @@ export class EditHistory<Item> {
     replaceWith(state: Item) {
         this.states = [state]
         this.undoPos = -1
+        this.listener?.call(null, this)
     }
 
     current(): Item | null {
@@ -34,6 +39,7 @@ export class EditHistory<Item> {
             this.states.shift()
         }
         this.undoPos = -1
+        this.listener?.call(null, this)
         return state
     }
 
@@ -46,6 +52,7 @@ export class EditHistory<Item> {
         } else {
             return null
         }
+        this.listener?.call(null, this)
         return this.states[this.undoPos]
     }
 
@@ -53,12 +60,18 @@ export class EditHistory<Item> {
         if (this.undoPos < 0) {
             return null
         }
-        if (this.undoPos + 1 < this.states.length) {
+        if (this.undoPos + 2 < this.states.length) {
             this.undoPos++
+            this.listener?.call(null, this)
             return this.states[this.undoPos]
         } else {
             this.undoPos = -1
-            return null
+            this.listener?.call(null, this)
+            if (this.states.length > 0) {
+                return this.states[this.states.length - 1]
+            } else {
+                return null
+            }
         }
     }
 
@@ -68,5 +81,9 @@ export class EditHistory<Item> {
 
     canRedo(): boolean {
         return this.undoPos >= 0 && this.undoPos + 1 < this.states.length
+    }
+
+    toString(): string {
+        return `pos=${this.undoPos.toString()}, len=${this.states.length}/${MAX_LENGTH}, states=` + joinToString(this.states, ValToString)
     }
 }

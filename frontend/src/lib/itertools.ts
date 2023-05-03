@@ -41,3 +41,25 @@ export function iterToArray<T>(src: Iterable<T>): Array<T> {
     }
     return r
 }
+
+export function ValToString<T>(val: T): string {
+    return val.toString()
+}
+
+export function PairToString<K, V>(val: V, key: K): string {
+    return key.toString() + ":" + val.toString()
+}
+
+export function joinToString<K, V>(src: ForEachable<K, V>, map: (val: V, key: K) => string, joiner: string = ","): string {
+    let r = ""
+    let notFirst = false
+    src.forEach((val, key) => {
+        if (notFirst) {
+            r += joiner
+        } else {
+            notFirst = true
+        }
+        r += map(val, key)
+    })
+    return r
+}

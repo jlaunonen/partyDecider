@@ -62,6 +62,21 @@ export interface PollProps {
     itemLevels: Map<ItemIdType, Level>
     targetLevels: Map<DropTargetType, Level>
     levels: Array<Level>
+    toString(): string
+}
+
+function copyProps(src: PollProps): PollProps {
+    const newLevels = eachToMap(src.levels, (val, _) => [val, val.copy()])
+    const id = newId("state:")
+    return {
+        items: eachToMap(src.items, MapIdentity),
+        itemLevels: eachToMap(src.itemLevels, (val, key) => [key, newLevels.get(val)]),
+        targetLevels: eachToMap(src.targetLevels, (val, key) => [key, newLevels.get(val)]),
+        levels: eachToArray(src.levels, (val) => newLevels.get(val)),
+        toString(): string {
+            return id
+        }
+    }
 }
 
 export class Poll {
@@ -116,17 +131,11 @@ export class Poll {
     }
 
     copy(): PollProps {
-        const newLevels = eachToMap(this.levels, (val, _) => [val, val.copy()])
-        return {
-            items: eachToMap(this.items, MapIdentity),
-            itemLevels: eachToMap(this.itemLevels, (val, key) => [key, newLevels.get(val)]),
-            targetLevels: eachToMap(this.targetLevels, (val, key) => [key, newLevels.get(val)]),
-            levels: eachToArray(this.levels, (val) => newLevels.get(val)),
-        }
+        return copyProps(this.state)
     }
 
     setState(props: PollProps) {
-        this.state = props
+        this.state = copyProps(props)
     }
 
     getLevels(): Array<Level> {

@@ -77,7 +77,7 @@ export interface PollProps {
 }
 
 function copyProps(src: PollProps): PollProps {
-    const newLevels = eachToMap(src.levels, (val, _) => [val, val.copy()])
+    const newLevels = eachToMap(src.levels, (val) => [val, val.copy()])
     const id = newId("state:")
     return {
         items: eachToMap(src.items, MapIdentity),
@@ -105,7 +105,7 @@ export class Poll {
         if (props) {
             this.state = props
         } else {
-            const items = eachToMap(appList, (app, _) => {
+            const items = eachToMap(appList, (app) => {
                 const itemId = newId("ii:")
                 return [
                     itemId,
@@ -285,7 +285,7 @@ export class Poll {
         this.targetLevels.set(newLevel.upOneDropId, newLevel)
     }
 
-    private removeLevel(level: Level, update: boolean = true) {
+    private removeLevel(level: Level, update = true) {
         this.unregisterLevel(level)
         this.levels.splice(this.levels.indexOf(level), 1)
         if (update) {

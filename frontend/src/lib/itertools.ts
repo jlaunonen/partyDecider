@@ -18,7 +18,7 @@ export function eachToArray<K, V, R>(src: ForEachable<K, V>, map: (val: V, key: 
 export function eachToMap<K, V, RK, RV>(src: ForEachable<K, V>, map: (val: V, key: K) => [RK, RV]): Map<RK, RV> {
     const r = new Map<RK, RV>()
     src.forEach((val, key) => {
-        let [k, v] = map(val, key)
+        const [k, v] = map(val, key)
         r.set(k, v)
     })
     return r
@@ -58,7 +58,7 @@ export function PairToString<K, V>(val: V, key: K): string {
     return key.toString() + ":" + val.toString()
 }
 
-export function joinToString<K, V>(src: ForEachable<K, V>, map: (val: V, key: K) => string, joiner: string = ","): string {
+export function joinToString<K, V>(src: ForEachable<K, V>, map: (val: V, key: K) => string, joiner = ","): string {
     let r = ""
     let notFirst = false
     src.forEach((val, key) => {
@@ -92,7 +92,7 @@ class RepeatIterator implements Iterator<number> {
     }
 }
 
-export function repeat(stop: number, start: number = 0): Iterable<number> {
+export function repeat(stop: number, start = 0): Iterable<number> {
     return {
         [Symbol.iterator](): Iterator<number> {
             return new RepeatIterator(stop, start)

@@ -27,7 +27,7 @@
         });
     }
 
-    let historyDestroyCb: any
+    let historyDestroyCb: () => void
     onMount(() => {
         historyDestroyCb = globalHistory.listen(({location}) => {
             currentUrl = makeRelUrl(location)

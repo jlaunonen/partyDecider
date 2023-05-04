@@ -32,10 +32,6 @@
 
     let promise = fetchGames();
 
-    function updateGames() {
-        promise = fetchGames();
-    }
-
     handlers.onEnd = () => {
         voteGrid = poll.getLevels()
     }
@@ -98,7 +94,7 @@
             Loading...
         </div>
     {:then _}
-        {#each voteGrid as level, index}
+        {#each voteGrid as level}
             <VoteGridLevel level={level} dropTargetHandler={dropTargetHandler} resourcesApi={resourcesApi}/>
         {/each}
     {/await}

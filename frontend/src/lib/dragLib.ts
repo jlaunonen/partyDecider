@@ -1,6 +1,6 @@
 const DEBUG = false
 
-const DRAG_MIME: string = "application/x-dragLib";
+const DRAG_MIME = "application/x-dragLib";
 export const DRAG_ID_ATTR = "data-dragId";
 
 
@@ -65,7 +65,6 @@ function getNodeText(node: HTMLElement): string {
 }
 
 function debugElement(node: HTMLElement) {
-    // if (true) return node
     const id = node.getAttribute(DRAG_ID_ATTR)
     if (id) {
         return id
@@ -133,7 +132,6 @@ export class DragTargetManager {
     }
 
     mount(node: HTMLElement) {
-        // setDragInfo(node, dragData)
         const listeners = [
             bindEvent(node, "dragover", (e) => this.dragOver(e, node)),
             bindEvent(node, "dragenter", (e) => this.handleDragEnter(e, node)),
@@ -165,7 +163,7 @@ class RefCountSet {
     }
 
     delete(value: HTMLElement): boolean {
-        let refs: number | undefined = this.refcount.get(value);
+        const refs: number | undefined = this.refcount.get(value);
         if (refs === undefined) {
             throw new Error("Reference count underflow");
         }

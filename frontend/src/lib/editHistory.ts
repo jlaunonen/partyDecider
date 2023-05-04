@@ -4,7 +4,7 @@ const MAX_LENGTH = 30
 
 export class EditHistory<Item> {
     private states: Array<Item> = []
-    private undoPos: number = -1
+    private undoPos = -1
 
     listener: ((history: EditHistory<Item>) => void) | null = null
 

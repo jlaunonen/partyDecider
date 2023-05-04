@@ -7,7 +7,7 @@ function initPort() {
     }
 }
 
-let port: string | null | undefined = initPort()
+const port: string | null | undefined = initPort()
 
 export function getBaseUrl(): string {
     // Set by vite.config.ts, true only on dev server.

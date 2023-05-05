@@ -16,11 +16,35 @@
 import * as runtime from '../runtime';
 import type {
   App,
+  Ballot,
+  HTTPValidationError,
+  Message,
+  VotingSession,
+  VotingSessionResult,
 } from '../models';
 import {
     AppFromJSON,
     AppToJSON,
+    BallotFromJSON,
+    BallotToJSON,
+    HTTPValidationErrorFromJSON,
+    HTTPValidationErrorToJSON,
+    MessageFromJSON,
+    MessageToJSON,
+    VotingSessionFromJSON,
+    VotingSessionToJSON,
+    VotingSessionResultFromJSON,
+    VotingSessionResultToJSON,
 } from '../models';
+
+export interface GetVotingResultRequest {
+    voteSessionKey: string;
+}
+
+export interface SubmitBallotRequest {
+    voteSessionKey: string;
+    ballot: Ballot;
+}
 
 /**
  * 
@@ -71,11 +95,11 @@ export class PublicApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    getVotings_Path(): string {
+    getVotingList_Path(): string {
         const queryParameters: any = {};
 
 
-        const path = `/api/votings`;
+        const path = `/api/voting`;
 
         return this.configuration.basePath + path + this.makeQueryParameters(queryParameters);
     }
@@ -83,38 +107,85 @@ export class PublicApi extends runtime.BaseAPI {
     /**
      * Get currently active voting sessions.
      */
-    async getVotingsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+    async getVotingListRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<VotingSession>>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/api/votings`,
+            path: `/api/voting`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
         }, initOverrides);
 
-        if (this.isJsonMime(response.headers.get('content-type'))) {
-            return new runtime.JSONApiResponse<any>(response);
-        } else {
-            return new runtime.TextApiResponse(response) as any;
-        }
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(VotingSessionFromJSON));
     }
 
     /**
      * Get currently active voting sessions.
      */
-    async getVotings(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
-        const response = await this.getVotingsRaw(initOverrides);
+    async getVotingList(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<VotingSession>> {
+        const response = await this.getVotingListRaw(initOverrides);
         return await response.value();
     }
 
-    submitBallot_Path(): string {
+    getVotingResult_Path(requestParameters: GetVotingResultRequest): string {
+        if (requestParameters.voteSessionKey === null || requestParameters.voteSessionKey === undefined) {
+            throw new runtime.RequiredError('voteSessionKey','Required parameter requestParameters.voteSessionKey was null or undefined when calling getVotingResult.');
+        }
+
         const queryParameters: any = {};
 
 
-        const path = `/api/votings`;
+        const path = `/api/voting/{vote_session_key}`.replace(`{${"vote_session_key"}}`, encodeURIComponent(String(requestParameters.voteSessionKey)));
+
+        return this.configuration.basePath + path + this.makeQueryParameters(queryParameters);
+    }
+
+    /**
+     * Get voting session result.
+     */
+    async getVotingResultRaw(requestParameters: GetVotingResultRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<VotingSessionResult>> {
+        if (requestParameters.voteSessionKey === null || requestParameters.voteSessionKey === undefined) {
+            throw new runtime.RequiredError('voteSessionKey','Required parameter requestParameters.voteSessionKey was null or undefined when calling getVotingResult.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/api/voting/{vote_session_key}`.replace(`{${"vote_session_key"}}`, encodeURIComponent(String(requestParameters.voteSessionKey))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => VotingSessionResultFromJSON(jsonValue));
+    }
+
+    /**
+     * Get voting session result.
+     */
+    async getVotingResult(requestParameters: GetVotingResultRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<VotingSessionResult> {
+        const response = await this.getVotingResultRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    submitBallot_Path(requestParameters: SubmitBallotRequest): string {
+        if (requestParameters.voteSessionKey === null || requestParameters.voteSessionKey === undefined) {
+            throw new runtime.RequiredError('voteSessionKey','Required parameter requestParameters.voteSessionKey was null or undefined when calling submitBallot.');
+        }
+
+        if (requestParameters.ballot === null || requestParameters.ballot === undefined) {
+            throw new runtime.RequiredError('ballot','Required parameter requestParameters.ballot was null or undefined when calling submitBallot.');
+        }
+
+        const queryParameters: any = {};
+
+
+        const path = `/api/voting/{vote_session_key}`.replace(`{${"vote_session_key"}}`, encodeURIComponent(String(requestParameters.voteSessionKey)));
 
         return this.configuration.basePath + path + this.makeQueryParameters(queryParameters);
     }
@@ -122,30 +193,37 @@ export class PublicApi extends runtime.BaseAPI {
     /**
      * Submit ballot for voting session.
      */
-    async submitBallotRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+    async submitBallotRaw(requestParameters: SubmitBallotRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Message>> {
+        if (requestParameters.voteSessionKey === null || requestParameters.voteSessionKey === undefined) {
+            throw new runtime.RequiredError('voteSessionKey','Required parameter requestParameters.voteSessionKey was null or undefined when calling submitBallot.');
+        }
+
+        if (requestParameters.ballot === null || requestParameters.ballot === undefined) {
+            throw new runtime.RequiredError('ballot','Required parameter requestParameters.ballot was null or undefined when calling submitBallot.');
+        }
+
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        headerParameters['Content-Type'] = 'application/json';
+
         const response = await this.request({
-            path: `/api/votings`,
+            path: `/api/voting/{vote_session_key}`.replace(`{${"vote_session_key"}}`, encodeURIComponent(String(requestParameters.voteSessionKey))),
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
+            body: BallotToJSON(requestParameters.ballot),
         }, initOverrides);
 
-        if (this.isJsonMime(response.headers.get('content-type'))) {
-            return new runtime.JSONApiResponse<any>(response);
-        } else {
-            return new runtime.TextApiResponse(response) as any;
-        }
+        return new runtime.JSONApiResponse(response, (jsonValue) => MessageFromJSON(jsonValue));
     }
 
     /**
      * Submit ballot for voting session.
      */
-    async submitBallot(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
-        const response = await this.submitBallotRaw(initOverrides);
+    async submitBallot(requestParameters: SubmitBallotRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Message> {
+        const response = await this.submitBallotRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

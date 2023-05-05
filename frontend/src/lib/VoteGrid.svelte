@@ -32,8 +32,11 @@
 
     let promise = fetchGames();
 
+    export let ballot: Map<number, number>
+
     handlers.onEnd = () => {
         voteGrid = poll.getLevels()
+        ballot = poll.getBallot()
     }
 
     const dropTargetHandler = new DragTargetManager();
@@ -103,6 +106,7 @@
         <!--suppress CommaExpressionJS -->
         <div>Ballot: {voteGrid, joinToString(poll.getBallot(), PairToString)}</div>
     {/if}
+    <slot name="submit"/>
 </div>
 
 <style>

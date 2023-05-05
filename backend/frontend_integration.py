@@ -2,7 +2,6 @@ from email.utils import format_datetime
 import contextlib
 import datetime
 import os
-import re
 import sys
 import hashlib
 import importlib.util
@@ -96,7 +95,8 @@ class ZipStaticFiles:
 
         info = self._available_files.get(p) or self._available_files.get(pindex)
         if info is None:
-            original_path = scope["path"]  # This contains preceding / which is missing from path.
+            # This contains preceding / which is missing from path.
+            original_path = scope["path"]
             converted_path = self._frontend_converter(original_path)
             if converted_path is None:
                 raise HTTPException(status_code=404)

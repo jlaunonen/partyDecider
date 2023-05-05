@@ -24,6 +24,15 @@ export function eachToMap<K, V, RK, RV>(src: ForEachable<K, V>, map: (val: V, ke
     return r
 }
 
+export function eachToObject<K, V, RV>(src: ForEachable<K, V>, map: (val: V, key: K) => [string, RV]): {[key: string]: RV} {
+    const r = {}
+    src.forEach((val, key) => {
+        const [k, v] = map(val, key)
+        r[k] = v
+    })
+    return r
+}
+
 export function flatEachToMap<K, V, RK, RV>(src: ForEachable<K, V>, map: (val: V, key: K) => Array<[RK, RV]>): Map<RK, RV> {
     const r = new Map<RK, RV>()
     src.forEach((val, key) => {

@@ -1,12 +1,13 @@
 import os
 import signal
-import typing
+from typing import Annotated
 
 import anyio
 from fastapi import APIRouter, Body, Depends, HTTPException, Query
 
 from . import crud, schemas
 from .dependencies import Database, require_admin
+from .state import State
 from .vdf.game_gatherer import main as game_gatherer
 
 
@@ -43,8 +44,8 @@ async def get_enabled(db: Database) -> list[schemas.App]:
 )
 async def set_enabled(
     db: Database,
-    items: typing.Annotated[list[int], Body()],
-    by_steam_id: typing.Annotated[bool, Query()] = False,
+    items: Annotated[list[int], Body()],
+    by_steam_id: Annotated[bool, Query()] = False,
 ) -> schemas.Message:
     """List of ID's (or Steam-ID's if by_steam_id is true) that should be enabled for voting."""
     try:
@@ -82,3 +83,13 @@ async def shutdown() -> schemas.Message:
         # Hope that there is no parent supervisor process.
         signal.raise_signal(signal.SIGINT)
     return schemas.Message.ok()
+
+
+@router.post(
+    "/voting",
+)
+async def add_voting_session(
+    db: Database, state: State, parameters: Annotated[schemas.NewVotingSession, Body()]
+) -> schemas.VotingSession:
+    apps = crud.get_apps(db, lambda app: app.enabled)
+    return schemas.VotingSession.from_orm(state.sessions.new_session(apps, parameters))

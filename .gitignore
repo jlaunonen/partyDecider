@@ -2,6 +2,7 @@
 /build
 /db.csv
 /env
+/state.pickle
 /venv
 __pycache__
 *.pyz

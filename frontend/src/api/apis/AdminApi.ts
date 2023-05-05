@@ -18,6 +18,8 @@ import type {
   App,
   HTTPValidationError,
   Message,
+  NewVotingSession,
+  VotingSession,
 } from '../models';
 import {
     AppFromJSON,
@@ -26,10 +28,19 @@ import {
     HTTPValidationErrorToJSON,
     MessageFromJSON,
     MessageToJSON,
+    NewVotingSessionFromJSON,
+    NewVotingSessionToJSON,
+    VotingSessionFromJSON,
+    VotingSessionToJSON,
 } from '../models';
+
+export interface AddVotingSessionRequest {
+    newVotingSession: NewVotingSession;
+}
 
 export interface SetEnabledRequest {
     requestBody: Array<number>;
+    bySteamId?: boolean;
 }
 
 /**
@@ -44,6 +55,52 @@ export class AdminApi extends runtime.BaseAPI {
             return '?' + this.configuration.queryParamsStringify(queryParameters);
         }
         return "";
+    }
+
+    addVotingSession_Path(requestParameters: AddVotingSessionRequest): string {
+        if (requestParameters.newVotingSession === null || requestParameters.newVotingSession === undefined) {
+            throw new runtime.RequiredError('newVotingSession','Required parameter requestParameters.newVotingSession was null or undefined when calling addVotingSession.');
+        }
+
+        const queryParameters: any = {};
+
+
+        const path = `/api/admin/voting`;
+
+        return this.configuration.basePath + path + this.makeQueryParameters(queryParameters);
+    }
+
+    /**
+     * Add Voting Session
+     */
+    async addVotingSessionRaw(requestParameters: AddVotingSessionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<VotingSession>> {
+        if (requestParameters.newVotingSession === null || requestParameters.newVotingSession === undefined) {
+            throw new runtime.RequiredError('newVotingSession','Required parameter requestParameters.newVotingSession was null or undefined when calling addVotingSession.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        const response = await this.request({
+            path: `/api/admin/voting`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: NewVotingSessionToJSON(requestParameters.newVotingSession),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => VotingSessionFromJSON(jsonValue));
+    }
+
+    /**
+     * Add Voting Session
+     */
+    async addVotingSession(requestParameters: AddVotingSessionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<VotingSession> {
+        const response = await this.addVotingSessionRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
     getAll_Path(): string {
@@ -162,6 +219,10 @@ export class AdminApi extends runtime.BaseAPI {
 
         const queryParameters: any = {};
 
+        if (requestParameters.bySteamId !== undefined) {
+            queryParameters['by_steam_id'] = requestParameters.bySteamId;
+        }
+
 
         const path = `/api/admin/enabled`;
 
@@ -169,7 +230,7 @@ export class AdminApi extends runtime.BaseAPI {
     }
 
     /**
-     * List of ID\'s (not Steam ID\'s) that should be enabled for voting.
+     * List of ID\'s (or Steam-ID\'s if by_steam_id is true) that should be enabled for voting.
      * Set enabled apps/games
      */
     async setEnabledRaw(requestParameters: SetEnabledRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Message>> {
@@ -178,6 +239,10 @@ export class AdminApi extends runtime.BaseAPI {
         }
 
         const queryParameters: any = {};
+
+        if (requestParameters.bySteamId !== undefined) {
+            queryParameters['by_steam_id'] = requestParameters.bySteamId;
+        }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -195,7 +260,7 @@ export class AdminApi extends runtime.BaseAPI {
     }
 
     /**
-     * List of ID\'s (not Steam ID\'s) that should be enabled for voting.
+     * List of ID\'s (or Steam-ID\'s if by_steam_id is true) that should be enabled for voting.
      * Set enabled apps/games
      */
     async setEnabled(requestParameters: SetEnabledRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Message> {

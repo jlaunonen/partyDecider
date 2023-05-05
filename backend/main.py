@@ -18,6 +18,7 @@ from .db import lifecycle as db_lifecycle
 from .platforms import Platform
 from .public import router as public_router
 from .resources import router as resources_router
+from .state import dev_lifecycle as state_dev_lifecycle
 from .frontend_integration import ZipStaticFiles, lifecycle as hmr_lifecycle
 from .openapi import use_route_names_as_operation_ids
 
@@ -40,7 +41,7 @@ async def lifecycle(_: FastAPI):
     if not settings.NO_BROWSER:
         Platform.spawn_browser(settings.BROWSER_CMD, config.ADMIN_URL)
 
-    async with db_lifecycle(), hmr_lifecycle():
+    async with db_lifecycle(), hmr_lifecycle(), state_dev_lifecycle():
         yield
 
 
@@ -73,6 +74,7 @@ async def database_middleware(request: Request, call_next) -> Response:
 FRONTEND_PATHS = (
     re.compile(r"/$"),
     re.compile(r"/(admin|default)$"),
+    re.compile(r"/poll/\w{8}-\w{4}-\w{4}-\w{12}$"),
 )
 
 
@@ -121,7 +123,12 @@ else:
         # If the 404 path is a path handled by frontend routing, redirect to (dev) frontend instead.
         # In zipapp, this is handled in the ZipStaticFiles separately.
         path = request.url.path
-        if exc.status_code != 404 or request.method != "GET" or path.startswith("/api/") or path.startswith("/res/"):
+        if (
+            exc.status_code != 404
+            or request.method != "GET"
+            or path.startswith("/api/")
+            or path.startswith("/res/")
+        ):
             return await http_exception_handler(request, exc)
 
         converted_path = frontend_converter(path)

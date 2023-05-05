@@ -4,9 +4,14 @@ apis/ResourcesApi.ts
 apis/index.ts
 index.ts
 models/App.ts
+models/Ballot.ts
 models/HTTPValidationError.ts
 models/LocationInner.ts
 models/Message.ts
+models/NewVotingSession.ts
 models/ValidationError.ts
+models/VotingItem.ts
+models/VotingSession.ts
+models/VotingSessionResult.ts
 models/index.ts
 runtime.ts

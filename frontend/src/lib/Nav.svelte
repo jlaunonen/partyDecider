@@ -1,19 +1,18 @@
 <script lang="ts">
     import "~bootstrap/dist/js/bootstrap.bundle.js"
     import {link} from "svelte-routing";
-    import {globalHistory} from "svelte-routing/src/history"
     import {makeLink} from "../network";
-    import {onDestroy, onMount} from "svelte";
 
     function makeRelUrl(loc: Location): string {
         return loc.pathname + loc.search + loc.hash
     }
 
-    let currentUrl: string = makeRelUrl(location)
-    let navDiv: HTMLElement
+    let navDiv: HTMLElement = undefined
+    export let current: Location = undefined
+
+    $: if (navDiv !== undefined && current !== undefined) updateCurrentTarget(navDiv, makeRelUrl(current))
 
     function updateCurrentTarget(navDiv: HTMLElement, currentUrl: string) {
-        if (navDiv === undefined) return
         navDiv.querySelectorAll(".nav-item > a").forEach((e: HTMLAnchorElement) => {
             // Get value from attribute to avoid getting full href, as currentUrl is only pathname and rest of it.
             const href = e.getAttribute("href")
@@ -26,18 +25,6 @@
             }
         });
     }
-
-    let historyDestroyCb: () => void
-    onMount(() => {
-        historyDestroyCb = globalHistory.listen(({location}) => {
-            currentUrl = makeRelUrl(location)
-            updateCurrentTarget(navDiv, currentUrl)
-        })
-        updateCurrentTarget(navDiv, currentUrl)
-    })
-    onDestroy(() => {
-        historyDestroyCb()
-    })
 </script>
 
 <header>

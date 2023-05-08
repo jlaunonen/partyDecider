@@ -1,4 +1,5 @@
 <script lang="ts">
+    import {link} from "svelte-routing";
     import {PublicApi} from "../api"
     import type {VotingSession} from "../api";
     import {apiConfig} from "../network";
@@ -21,7 +22,7 @@
     {:then polls}
         <ul>
             {#each polls as poll}
-                <li><a href={makeLink("/poll/" + poll.key)}>{poll.name} ({poll.key})</a></li>
+                <li><a href={makeLink("/poll/" + poll.key)} use:link>{poll.name} ({poll.key})</a></li>
             {/each}
         </ul>
         <div></div>

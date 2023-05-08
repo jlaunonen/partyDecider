@@ -2,8 +2,8 @@
     import VoteGridItem from "./VoteGridItem.svelte";
     import {mountSource} from "./dragLib";
     import type {DragTargetManager} from "./dragLib";
-    import {Level} from "./models";
-    import {ResourcesApi} from "../api";
+    import type {Level} from "./models";
+    import type {ResourcesApi} from "../api";
 
     export let level: Level
 
@@ -15,7 +15,7 @@
 </script>
 
 <div class="row pd-sep align-items-center" use:dropTarget data-dragId={level.upOneDropId}>
-    <hr/>
+    <hr />
 </div>
 
 <div class="card">
@@ -25,7 +25,7 @@
             <div class="card-body">
                 <div class="row px-2">
                     {#each level.items as el}
-                        <VoteGridItem item={el} resourcesApi={resourcesApi}/>
+                        <VoteGridItem item={el} resourcesApi={resourcesApi} />
                     {/each}
                 </div>
             </div>

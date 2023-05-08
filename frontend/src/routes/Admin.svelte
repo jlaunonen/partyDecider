@@ -13,6 +13,6 @@
 
 <div class="row my-4">
     <div class="col">
-        <Shutdown/>
+        <Shutdown />
     </div>
 </div>

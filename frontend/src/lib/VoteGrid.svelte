@@ -1,7 +1,8 @@
 <script lang="ts">
     import VoteGridLevel from "./VoteGridLevel.svelte"
     import {DragTargetManager, handlers} from "./dragLib"
-    import {Level, Poll} from "./models"
+    import {Poll} from "./models"
+    import type {Level} from "./models"
     import type {PollProps} from "./models"
 
     import {apiConfig} from "../network"
@@ -65,13 +66,12 @@
         updateButtons()
     }
 
-    type Disabled = "disabled" | ""
-    let undoDisabled: Disabled = "disabled"
-    let redoDisabled: Disabled = "disabled"
+    let undoDisabled = true
+    let redoDisabled = true
 
     function updateButtons() {
-        undoDisabled = history.canUndo() ? "" : "disabled"
-        redoDisabled = history.canRedo() ? "" : "disabled"
+        undoDisabled = !history.canUndo()
+        redoDisabled = !history.canRedo()
     }
 
     function collapse() {
@@ -98,7 +98,7 @@
         </div>
     {:then _}
         {#each voteGrid as level}
-            <VoteGridLevel level={level} dropTargetHandler={dropTargetHandler} resourcesApi={resourcesApi}/>
+            <VoteGridLevel level={level} dropTargetHandler={dropTargetHandler} resourcesApi={resourcesApi} />
         {/each}
     {/await}
     {#if poll && IS_DEVELOPMENT}
@@ -106,7 +106,7 @@
         <!--suppress CommaExpressionJS -->
         <div>Ballot: {voteGrid, joinToString(poll.getBallot(), PairToString)}</div>
     {/if}
-    <slot name="submit"/>
+    <slot name="submit" />
 </div>
 
 <style>

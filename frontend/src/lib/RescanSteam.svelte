@@ -18,6 +18,6 @@
 
 <div class="row my-4">
     <div class="col">
-        <button class="btn btn-warning" on:click={rescan}>Rescan Steam collection</button>
+        <button type="button" class="btn btn-warning" on:click={rescan}>Rescan Steam collection</button>
     </div>
 </div>

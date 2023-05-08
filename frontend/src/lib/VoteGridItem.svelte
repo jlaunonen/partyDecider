@@ -1,7 +1,7 @@
 <script lang="ts">
     import {mountSource} from "./dragLib"
     import type {ItemInfo} from "./models"
-    import {ResourcesApi} from "../api"
+    import type {ResourcesApi} from "../api"
     import type {App} from "../api"
 
     export let item: ItemInfo
@@ -15,7 +15,7 @@
 
 <div draggable="true" class="col-lg-3 col-6 pd-item py-2" use:mountSource data-dragId={item.dragId}>
     {#if item.data.steamId}
-        <img draggable="false" class="float-end" src={imageSrc(item.data)} alt="icon"/>
+        <img draggable="false" class="float-end" src={imageSrc(item.data)} alt="icon" />
     {/if}
     {item.name}
 </div>

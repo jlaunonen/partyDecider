@@ -14,9 +14,7 @@
             readonly iconUrl: string,
             readonly enabled: boolean,
         ) {
-            this.checked = enabled ? "checked" : ""
         }
-        readonly checked: string
     }
 
     let allAppInfos: Array<AppInfo> = []
@@ -89,7 +87,7 @@
                 {@const id = "enable-" + game.id}
                 <li class="list-group-item" data-target={id} on:click={toggle}>
                     <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="" checked="{game.checked}" id={id}/>
+                        <input class="form-check-input" type="checkbox" value="" checked={game.enabled} id={id}/>
                         <label for={id}>
                             <img src={game.iconUrl} alt="icon"/> {game.name}
                         </label>

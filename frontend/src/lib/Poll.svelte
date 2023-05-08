@@ -58,17 +58,17 @@
             <button type="button" class="btn btn-primary" on:click={submitBallot}>Submit</button>
         {/if}
         {#if ballot && IS_DEVELOPMENT}
-        From sub component: {joinToString(ballot, PairToString)}
+            From sub component: {joinToString(ballot, PairToString)}
         {/if}
     </div>
 </VoteGrid>
 {#if resultItems && resultItems.length}
-<div>
-    <h3>Results:</h3>
-    <ul>
-    {#each resultItems as item}
-        <li>{item.name} : {item.score}</li>
-    {/each}
-    </ul>
-</div>
+    <div>
+        <h3>Results:</h3>
+        <ul>
+            {#each resultItems as item}
+                <li>{item.name} : {item.score}</li>
+            {/each}
+        </ul>
+    </div>
 {/if}

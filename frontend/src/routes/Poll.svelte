@@ -5,4 +5,4 @@
     export let pollId
 </script>
 
-<Poll pollId={pollId} />
+<Poll {pollId} />

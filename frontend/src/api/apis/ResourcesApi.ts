@@ -24,10 +24,12 @@ import {
 
 export interface ResHeaderRequest {
     appId: number;
+    asAdmin?: boolean;
 }
 
 export interface ResIconRequest {
     appId: number;
+    asAdmin?: boolean;
 }
 
 /**
@@ -51,6 +53,10 @@ export class ResourcesApi extends runtime.BaseAPI {
 
         const queryParameters: any = {};
 
+        if (requestParameters.asAdmin !== undefined) {
+            queryParameters['as_admin'] = requestParameters.asAdmin;
+        }
+
 
         const path = `/res/logo/{app_id}`.replace(`{${"app_id"}}`, encodeURIComponent(String(requestParameters.appId)));
 
@@ -66,6 +72,10 @@ export class ResourcesApi extends runtime.BaseAPI {
         }
 
         const queryParameters: any = {};
+
+        if (requestParameters.asAdmin !== undefined) {
+            queryParameters['as_admin'] = requestParameters.asAdmin;
+        }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -93,6 +103,10 @@ export class ResourcesApi extends runtime.BaseAPI {
 
         const queryParameters: any = {};
 
+        if (requestParameters.asAdmin !== undefined) {
+            queryParameters['as_admin'] = requestParameters.asAdmin;
+        }
+
 
         const path = `/res/icon/{app_id}`.replace(`{${"app_id"}}`, encodeURIComponent(String(requestParameters.appId)));
 
@@ -108,6 +122,10 @@ export class ResourcesApi extends runtime.BaseAPI {
         }
 
         const queryParameters: any = {};
+
+        if (requestParameters.asAdmin !== undefined) {
+            queryParameters['as_admin'] = requestParameters.asAdmin;
+        }
 
         const headerParameters: runtime.HTTPHeaders = {};
 

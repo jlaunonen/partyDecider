@@ -7,7 +7,7 @@
 
 <AddPoll />
 
-<GameList />
+<GameList asAdmin={true}/>
 
 <RescanSteam />
 

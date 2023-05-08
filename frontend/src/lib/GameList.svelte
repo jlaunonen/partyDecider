@@ -3,6 +3,9 @@
     import {AdminApi, ResourcesApi} from "../api";
     import type {App} from "../api";
 
+    /** Is this component displayed in admin site? */
+    export let asAdmin = false
+
     const api = new AdminApi(apiConfig);
     const resourcesApi = new ResourcesApi(apiConfig);
 
@@ -45,7 +48,7 @@
     }
 
     function imageSrc(app: App): string {
-        return resourcesApi.resIcon_Path({appId: app.steamId});
+        return resourcesApi.resIcon_Path({appId: app.steamId, asAdmin: asAdmin});
     }
 
     function toggle(this: HTMLElement, e: PointerEvent) {

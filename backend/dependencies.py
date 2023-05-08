@@ -10,4 +10,8 @@ async def require_admin(request: Request):
         raise HTTPException(status_code=401, detail="Access denied")
 
 
+def is_admin(request: Request):
+    return request.client.host == "127.0.0.1"
+
+
 Database = typing.Annotated[AsyncSession, Depends(request_database)]

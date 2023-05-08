@@ -2,10 +2,11 @@
 import os
 import typing
 
-from fastapi import APIRouter, Path, HTTPException
+from fastapi import APIRouter, Path, HTTPException, Request, Query
 from fastapi.responses import FileResponse
 
-from . import config
+from .dependencies import Database, is_admin
+from . import config, crud
 
 
 router = APIRouter(
@@ -18,14 +19,24 @@ router = APIRouter(
     response_class=FileResponse,
     summary="App/game icon resource.",
 )
-async def res_icon(app_id: typing.Annotated[int, Path()]) -> FileResponse:
+async def res_icon(
+    request: Request,
+    db: Database,
+    app_id: typing.Annotated[int, Path()],
+    as_admin: typing.Annotated[bool, Query()] = False,
+) -> FileResponse:
     filename = os.path.join(
         config.STEAM_CONFIG_ROOT, "appcache", "librarycache", str(app_id) + "_icon.jpg"
     )
-    if not os.path.isfile(filename):
-        raise HTTPException(status_code=404)
+    enabled_apps = {app.steam_id for app in crud.get_apps(db, lambda app: app.enabled)}
 
-    return FileResponse(path=filename)
+    # Only enabled apps should be accessible, unless they are requested by admin for admin page.
+    if (app_id in enabled_apps or as_admin and is_admin(request)) and os.path.isfile(
+        filename
+    ):
+        return FileResponse(path=filename)
+
+    raise HTTPException(status_code=404)
 
 
 @router.get(
@@ -33,14 +44,24 @@ async def res_icon(app_id: typing.Annotated[int, Path()]) -> FileResponse:
     response_class=FileResponse,
     summary="App/game header/logo resource.",
 )
-async def res_header(app_id: typing.Annotated[int, Path()]) -> FileResponse:
+async def res_header(
+    request: Request,
+    db: Database,
+    app_id: typing.Annotated[int, Path()],
+    as_admin: typing.Annotated[bool, Query()] = False,
+) -> FileResponse:
     filename = os.path.join(
         config.STEAM_CONFIG_ROOT,
         "appcache",
         "librarycache",
         str(app_id) + "_header.jpg",
     )
-    if not os.path.isfile(filename):
-        raise HTTPException(status_code=404)
+    enabled_apps = {app.steam_id for app in crud.get_apps(db, lambda app: app.enabled)}
 
-    return FileResponse(path=filename)
+    # Only enabled apps should be accessible, unless they are requested by admin for admin page.
+    if (app_id in enabled_apps or as_admin and is_admin(request)) and os.path.isfile(
+        filename
+    ):
+        return FileResponse(path=filename)
+
+    raise HTTPException(status_code=404)

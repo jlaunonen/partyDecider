@@ -24,7 +24,7 @@ export function eachToMap<K, V, RK, RV>(src: ForEachable<K, V>, map: (val: V, ke
     return r
 }
 
-export function eachToObject<K, V, RV>(src: ForEachable<K, V>, map: (val: V, key: K) => [string, RV]): {[key: string]: RV} {
+export function eachToObject<K, V, RV>(src: ForEachable<K, V>, map: (val: V, key: K) => [string, RV]): Record<string, RV> {
     const r = {}
     src.forEach((val, key) => {
         const [k, v] = map(val, key)

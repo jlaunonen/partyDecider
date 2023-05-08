@@ -33,7 +33,7 @@
 
     let promise = fetchGames();
 
-    export let ballot: Map<number, number>
+    export let ballot: Map<number, number> = new Map()
 
     handlers.onEnd = () => {
         voteGrid = poll.getLevels()

@@ -51,16 +51,17 @@
         return resourcesApi.resIcon_Path({appId: app.steamId, asAdmin: asAdmin});
     }
 
-    function toggle(this: HTMLElement, e: PointerEvent) {
-        // TODO: Maybe do something else to skip click bubbling from the input and label while still allowing clicking the div, and not breaking keyboard usage.
-        if ((e.target as HTMLElement).tagName != "DIV") {
-            return
-        }
+    function toggle(this: HTMLElement, _: PointerEvent) {
         const id = this.getAttribute("data-target")
         if (id) {
             const cb = document.getElementById(id) as HTMLInputElement
             cb.checked = !cb.checked
         }
+    }
+
+    function noBubble(e: Event) {
+        // Stop event from bubbling and toggle() to be called, causing the checkbox to be toggled twice.
+        e.stopPropagation()
     }
 
     async function updateByOnlyEnabled(only: boolean): Promise<Array<AppInfo>> {
@@ -90,7 +91,7 @@
                 {@const id = "enable-" + game.id}
                 <li class="list-group-item" data-target={id} on:click={toggle}>
                     <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="" checked={game.enabled} id={id}/>
+                        <input class="form-check-input" type="checkbox" value="" checked={game.enabled} id={id} on:click={noBubble} />
                         <label for={id}>
                             <img src={game.iconUrl} alt="icon"/> {game.name}
                         </label>

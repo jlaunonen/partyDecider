@@ -16,7 +16,7 @@ class AppItem:
         return self.id, self.steam_id, int(self.enabled), self.name
 
     @classmethod
-    def from_csv(cls, row: tuple) -> AppItem:
+    def from_csv(cls, row: list[str]) -> AppItem:
         if len(row) != 4:
             raise ValueError(row)
 

@@ -7,6 +7,7 @@ import fastapi
 
 from . import settings
 from .models import AppItem
+from .utils import ChangeTrackedDict
 
 
 class _Database:
@@ -15,10 +16,13 @@ class _Database:
             AppItem(1, 550, "Left 4 Dead 2"),  # TODO: Remove test entries
             AppItem(2, 620, "Portal 2"),
         ]
-        self.apps: dict[int, AppItem] = {
+        self.apps: ChangeTrackedDict[int, AppItem] = ChangeTrackedDict({
             app.id: app
             for app in apps
-        }  # fmt: skip
+        })  # fmt: skip
+
+    def any_changed(self):
+        return self.apps.is_changed
 
 
 _db: _Database | None = None
@@ -76,10 +80,16 @@ async def finish_request(request):
 def _read_db(file_name: str):
     with open(file_name, "rt", newline="") as f:
         reader = csv.reader(f)
-        reader_iter = iter(reader)
+        reader_iter: typing.Iterator[list[str]] = iter(reader)
         _read_version(reader_iter)
 
         new_db = _Database()
+
+        def proxy():
+            for line in reader_iter:
+                if len(line) == 1 and line[0] == _TERMINATOR:
+                    break
+                yield line
 
         while True:
             try:
@@ -89,7 +99,7 @@ def _read_db(file_name: str):
             if len(tab_type) != 1:
                 raise ValueError()
             t_reader = _TYPES[tab_type[0]]
-            t_reader.read(reader_iter, new_db)
+            t_reader.read(proxy(), new_db)
 
         global _db
         _db = new_db
@@ -106,7 +116,7 @@ def _read_version(it: iter):
 
 class _Table:
     @classmethod
-    def read(cls, it: iter, db: _Database):
+    def read(cls, it: typing.Iterator[list[str]], db: _Database):
         raise NotImplementedError
 
     @classmethod
@@ -116,19 +126,18 @@ class _Table:
 
 class _Apps(_Table):
     @classmethod
-    def read(cls, it: iter, db: _Database):
+    def read(cls, it: typing.Iterator[list[str]], db: _Database):
         # ID, Steam_ID, Name
         for line in it:
-            if len(line) == 1 and line[0] == _TERMINATOR:
-                break
             item = AppItem.from_csv(line)
             db.apps[item.id] = item
+        db.apps.clear_changed()
 
     @classmethod
     def write(cls, to: csv.writer, db: _Database):
         for app in db.apps.values():
             to.writerow(app.to_csv())
-        to.writerow([_TERMINATOR])
+        db.apps.clear_changed()
 
 
 _TYPES: dict[str, typing.Type[_Table]] = {
@@ -137,6 +146,9 @@ _TYPES: dict[str, typing.Type[_Table]] = {
 
 
 def _write_db(file_name: str, db: _Database):
+    if not db.any_changed() and os.path.exists(file_name):
+        return
+
     with open(file_name, "wt", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(["version", 1])
@@ -144,3 +156,4 @@ def _write_db(file_name: str, db: _Database):
         for _type, dao in _TYPES.items():
             writer.writerow([_type])
             dao.write(writer, db)
+            writer.writerow([_TERMINATOR])

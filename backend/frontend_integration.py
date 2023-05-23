@@ -71,7 +71,9 @@ class ZipStaticFiles:
         self._zip: zipfile.ZipFile = zipfile.ZipFile(spec.loader.archive)
         for info in self._zip.infolist():
             name = info.filename
-            if name.startswith("frontend/") and not name.endswith("/"):
+            if (
+                name.startswith("frontend/") or name.startswith("backend/static/")
+            ) and not name.endswith("/"):
                 available_files[name] = info
 
         self._available_files = available_files
@@ -101,6 +103,16 @@ class ZipStaticFiles:
             if converted_path is None:
                 raise HTTPException(status_code=404)
             info = self._available_files.get("frontend/index.html")
+
+        return ZipFileResponse(
+            info=info,
+            opener=lambda: self._zip.open(info.filename),
+        )
+
+    def get_local_response(self, path: str) -> Response:
+        info = self._available_files.get(path)
+        if info is None:
+            raise HTTPException(status_code=404)
 
         return ZipFileResponse(
             info=info,

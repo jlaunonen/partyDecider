@@ -30,7 +30,7 @@ export interface App {
      * @type {number}
      * @memberof App
      */
-    steamId: number;
+    steamId?: number;
     /**
      * 
      * @type {string}
@@ -45,7 +45,6 @@ export interface App {
 export function instanceOfApp(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "id" in value;
-    isInstance = isInstance && "steamId" in value;
     isInstance = isInstance && "name" in value;
 
     return isInstance;
@@ -62,7 +61,7 @@ export function AppFromJSONTyped(json: any, ignoreDiscriminator: boolean): App {
     return {
         
         'id': json['id'],
-        'steamId': json['steam_id'],
+        'steamId': !exists(json, 'steam_id') ? undefined : json['steam_id'],
         'name': json['name'],
     };
 }

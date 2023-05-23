@@ -98,8 +98,10 @@ def frontend_converter(path: str) -> str | None:
 
 
 if config.IS_ZIP_APP:
-    app.mount("/", ZipStaticFiles(frontend_converter))
+    static_server = ZipStaticFiles(frontend_converter)
+    app.mount("/", static_server)
 else:
+    static_server = None
     print(
         "Root path is expecting frontend server to be found at",
         f"{config.VITE_DEV_URL}?port={settings.PORT}",

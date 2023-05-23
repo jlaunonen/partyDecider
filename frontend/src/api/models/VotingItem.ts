@@ -30,7 +30,7 @@ export interface VotingItem {
      * @type {number}
      * @memberof VotingItem
      */
-    steamId: number;
+    steamId?: number;
     /**
      * 
      * @type {string}
@@ -51,7 +51,6 @@ export interface VotingItem {
 export function instanceOfVotingItem(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "id" in value;
-    isInstance = isInstance && "steamId" in value;
     isInstance = isInstance && "name" in value;
 
     return isInstance;
@@ -68,7 +67,7 @@ export function VotingItemFromJSONTyped(json: any, ignoreDiscriminator: boolean)
     return {
         
         'id': json['id'],
-        'steamId': json['steam_id'],
+        'steamId': !exists(json, 'steam_id') ? undefined : json['steam_id'],
         'name': json['name'],
         'score': !exists(json, 'score') ? undefined : json['score'],
     };

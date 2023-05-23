@@ -22,7 +22,7 @@ class Message(BaseModel):
 
 class App(BaseModel):
     id: int
-    steam_id: int
+    steam_id: int | None
     name: str
 
     class Config:

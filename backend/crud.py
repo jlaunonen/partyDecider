@@ -18,6 +18,10 @@ def get_apps(
     )
 
 
+def get_app_by_id(session: AsyncSession, app_id: int) -> models.AppItem | None:
+    return session.db.apps.get(app_id)
+
+
 def set_enabled(session: AsyncSession, ids: list[int]):
     app_ids = set(a.id for a in session.db.apps.values())
     for _id in ids:

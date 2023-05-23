@@ -48,7 +48,7 @@
     }
 
     function imageSrc(app: App): string {
-        return resourcesApi.resIcon_Path({appId: app.steamId, asAdmin: asAdmin});
+        return resourcesApi.resIcon_Path({appId: app.id, asAdmin: asAdmin});
     }
 
     function toggle(this: HTMLElement, _: PointerEvent) {

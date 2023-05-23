@@ -8,8 +8,9 @@
 
     export let resourcesApi: ResourcesApi
 
+    // TODO: Make icon display condition to be explicit instead of deducting from missing steamId.
     function imageSrc(app: App): string {
-        return resourcesApi.resIcon_Path({appId: app.steamId});
+        return resourcesApi.resIcon_Path({appId: app.id});
     }
 </script>
 

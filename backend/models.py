@@ -8,7 +8,7 @@ from .utils import parse_bool
 @dataclass
 class AppItem:
     id: int
-    steam_id: int
+    steam_id: int | None
     name: str
     enabled: bool = False
 
@@ -22,7 +22,7 @@ class AppItem:
 
         return AppItem(
             id=int(row[0]),
-            steam_id=int(row[1]),
+            steam_id=int(row[1]) if row[1] else None,
             name=row[3],
             enabled=parse_bool(row[2], False),
         )

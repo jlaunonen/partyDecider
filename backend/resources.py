@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, Path, HTTPException, Request, Query
 from fastapi.responses import FileResponse
 
 from .dependencies import Database, is_admin
+from .frontend_integration import ModifiedFileResponse
 from . import config, crud, models
 
 
@@ -37,7 +38,7 @@ def fallback_static_image(name: str):
     from .main import static_server
     if static_server is not None:
         return static_server.get_local_response(path)
-    return FileResponse(path=path)
+    return ModifiedFileResponse(path=path)
 
 
 @router.get(
@@ -56,7 +57,7 @@ async def res_icon(
             str(app_info.steam_id) + "_icon.jpg",
         )
         if os.path.isfile(filename):
-            return FileResponse(path=filename)
+            return ModifiedFileResponse(path=filename)
 
     return fallback_static_image("empty_icon.png")
 
@@ -77,6 +78,6 @@ async def res_header(
             str(app_info.steam_id) + "_header.jpg",
         )
         if os.path.isfile(filename):
-            return FileResponse(path=filename)
+            return ModifiedFileResponse(path=filename)
 
     return fallback_static_image("empty_icon.png")

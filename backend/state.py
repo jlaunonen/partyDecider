@@ -12,7 +12,7 @@ from .voting.session import SessionManager
 
 @dataclasses.dataclass
 class StateData:
-    sessions: SessionManager = dataclasses.field(default_factory=SessionManager)
+    voting_sessions: SessionManager = dataclasses.field(default_factory=SessionManager)
 
 
 state_data = StateData()

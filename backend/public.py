@@ -28,7 +28,7 @@ async def get_apps(db: Database) -> list[schemas.App]:
     summary="Get currently active voting sessions.",
 )
 async def get_voting_list(state: State) -> list[schemas.VotingSession]:
-    return [schemas.VotingSession.from_orm(e) for e in state.sessions]
+    return [schemas.VotingSession.from_orm(e) for e in state.voting_sessions]
 
 
 @router.post(
@@ -42,7 +42,7 @@ async def get_voting_list(state: State) -> list[schemas.VotingSession]:
 async def submit_ballot(
     state: State, vote_session_key: str, ballot: Annotated[schemas.Ballot, Body()]
 ) -> schemas.Message:
-    session = state.sessions.get(vote_session_key)
+    session = state.voting_sessions.get(vote_session_key)
     if session is None:
         raise HTTPException(status_code=404)
     try:
@@ -57,7 +57,7 @@ async def submit_ballot(
 async def get_voting_result(
     state: State, db: Database, vote_session_key: str
 ) -> schemas.VotingSessionResult:
-    session = state.sessions.get(vote_session_key)
+    session = state.voting_sessions.get(vote_session_key)
     if session is None:
         raise HTTPException(status_code=404)
     result = session.get_result()

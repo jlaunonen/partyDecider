@@ -92,4 +92,4 @@ async def add_voting_session(
     db: Database, state: State, parameters: Annotated[schemas.NewVotingSession, Body()]
 ) -> schemas.VotingSession:
     apps = crud.get_apps(db, lambda app: app.enabled)
-    return schemas.VotingSession.from_orm(state.sessions.new_session(apps, parameters))
+    return schemas.VotingSession.from_orm(state.voting_sessions.new_session(apps, parameters))

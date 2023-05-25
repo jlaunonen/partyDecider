@@ -15,8 +15,13 @@
     function updateCurrentTarget(navDiv: HTMLElement, currentUrl: string) {
         navDiv.querySelectorAll(".nav-item > a").forEach((e: HTMLAnchorElement) => {
             // Get value from attribute to avoid getting full href, as currentUrl is only pathname and rest of it.
+            // The e.href attribute also contains hostname etc.
             const href = e.getAttribute("href")
-            if (href === currentUrl) {
+
+            // If defined, regular expression for paths that should be considered sub-views of this navigation item.
+            const alsoExpression = e.getAttribute("data-also")
+
+            if (href === currentUrl || alsoExpression && new RegExp(alsoExpression).exec(currentUrl) !== null) {
                 e.classList.add("active")
                 e.setAttribute("aria-current", "page")
             } else {
@@ -25,6 +30,18 @@
             }
         });
     }
+
+    function isMaybeAdmin(): boolean {
+        // Just a simple heuristics for determining if admin link should be shown.
+        // The proper access control needs to be implemented per api in server.
+        return [
+            "0.0.0.0",
+            "127.0.0.1",
+            "localhost",
+        ].indexOf(location.hostname) >= 0
+    }
+
+    const showAdmin = isMaybeAdmin()
 </script>
 
 <header>
@@ -36,12 +53,14 @@
             </button>
             <div class="collapse navbar-collapse" id="navbar" bind:this={navDiv}>
                 <ul class="navbar-nav me-auto mb-2 mb-md-0">
-                    <li class="nav-item"><a class="nav-link" aria-current="page" href={makeLink("/")} use:link>Current polls</a></li>
+                    <li class="nav-item"><a class="nav-link" href={makeLink("/")} use:link data-also="/poll/.+">Current polls</a></li>
                     <li class="nav-item"><a class="nav-link" href={makeLink("/default")} use:link>Default opinion</a></li>
                 </ul>
-                <ul class="navbar-nav mb-2 mb-md-0">
-                    <li class="nav-item"><a class="nav-link" href={makeLink("/admin")} use:link>Admin</a></li>
-                </ul>
+                {#if showAdmin}
+                    <ul class="navbar-nav mb-2 mb-md-0">
+                        <li class="nav-item"><a class="nav-link" href={makeLink("/admin")} use:link>Admin</a></li>
+                    </ul>
+                {/if}
             </div>
         </div>
     </nav>

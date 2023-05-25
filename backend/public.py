@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from typing import Annotated
 
-from fastapi import APIRouter, Body, HTTPException
+from fastapi import APIRouter, Body, HTTPException, status
 
 from . import crud, schemas, models
 from .dependencies import Database
@@ -34,6 +34,10 @@ async def get_voting_list(state: State) -> list[schemas.VotingSession]:
 @router.post(
     "/voting/{vote_session_key}",
     summary="Submit ballot for voting session.",
+    responses={
+        404: {"description": "Session with given key does not exist."},
+        423: {"description": "Session voting time has ended."},
+    },
 )
 async def submit_ballot(
     state: State, vote_session_key: str, ballot: Annotated[schemas.Ballot, Body()]
@@ -41,7 +45,11 @@ async def submit_ballot(
     session = state.sessions.get(vote_session_key)
     if session is None:
         raise HTTPException(status_code=404)
-    session.ballots.append(Ballot.create(ballot.ballot))
+    try:
+        model = Ballot.create(ballot.ballot)
+        session.add_ballot(model)
+    except ValueError:
+        raise HTTPException(status_code=status.HTTP_423_LOCKED)
     return schemas.Message.ok()
 
 

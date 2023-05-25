@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from .utils import parse_bool
+from ..utils import parse_bool
 
 
 @dataclass

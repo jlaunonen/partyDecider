@@ -3,6 +3,7 @@ import typing
 from fastapi import Depends, HTTPException, Request
 
 from .db import AsyncSession, request_database
+from . import state as _state
 
 
 async def require_admin(request: Request):
@@ -15,3 +16,9 @@ def is_admin(request: Request):
 
 
 Database = typing.Annotated[AsyncSession, Depends(request_database)]
+
+
+async def get_ballot_store(state: _state.State) -> _state.SessionManager:
+    return state.voting_sessions
+
+VoteSessionManager = typing.Annotated[_state.SessionManager, Depends(get_ballot_store)]

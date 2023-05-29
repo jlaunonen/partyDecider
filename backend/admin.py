@@ -6,8 +6,7 @@ import anyio
 from fastapi import APIRouter, Body, Depends, HTTPException, Query
 
 from . import crud, schemas
-from .dependencies import Database, require_admin
-from .state import State
+from .dependencies import Database, VoteSessionManager, require_admin
 from .vdf.game_gatherer import main as game_gatherer
 
 
@@ -89,7 +88,7 @@ async def shutdown() -> schemas.Message:
     "/voting",
 )
 async def add_voting_session(
-    db: Database, state: State, parameters: Annotated[schemas.NewVotingSession, Body()]
+    db: Database, sessions: VoteSessionManager, parameters: Annotated[schemas.NewVotingSession, Body()]
 ) -> schemas.VotingSession:
     apps = crud.get_apps(db, lambda app: app.enabled)
-    return schemas.VotingSession.from_orm(state.voting_sessions.new_session(apps, parameters))
+    return schemas.VotingSession.from_orm(sessions.new_session(apps, parameters))

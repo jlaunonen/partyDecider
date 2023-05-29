@@ -4,8 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Body, HTTPException, status
 
 from . import crud, schemas, models
-from .dependencies import Database
-from .state import State
+from .dependencies import Database, VoteSessionManager
 from .voting.ballot import Ballot
 
 
@@ -27,8 +26,8 @@ async def get_apps(db: Database) -> list[schemas.App]:
     "/voting",
     summary="Get currently active voting sessions.",
 )
-async def get_voting_list(state: State) -> list[schemas.VotingSession]:
-    return [schemas.VotingSession.from_orm(e) for e in state.voting_sessions]
+async def get_voting_list(sessions: VoteSessionManager) -> list[schemas.VotingSession]:
+    return [schemas.VotingSession.from_orm(e) for e in sessions]
 
 
 @router.post(
@@ -40,9 +39,9 @@ async def get_voting_list(state: State) -> list[schemas.VotingSession]:
     },
 )
 async def submit_ballot(
-    state: State, vote_session_key: str, ballot: Annotated[schemas.Ballot, Body()]
+    sessions: VoteSessionManager, vote_session_key: str, ballot: Annotated[schemas.Ballot, Body()]
 ) -> schemas.Message:
-    session = state.voting_sessions.get(vote_session_key)
+    session = sessions.get(vote_session_key)
     if session is None:
         raise HTTPException(status_code=404)
     try:
@@ -55,9 +54,9 @@ async def submit_ballot(
 
 @router.get("/voting/{vote_session_key}", summary="Get voting session result.")
 async def get_voting_result(
-    state: State, db: Database, vote_session_key: str
+    sessions: VoteSessionManager, db: Database, vote_session_key: str
 ) -> schemas.VotingSessionResult:
-    session = state.voting_sessions.get(vote_session_key)
+    session = sessions.get(vote_session_key)
     if session is None:
         raise HTTPException(status_code=404)
     result = session.get_result()

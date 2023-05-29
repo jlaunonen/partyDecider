@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Module entry point.
-# Zip app entry point calls main() directly from generated code.
+# Zip app entry point (toplevel __main__) calls main() (below) directly from generated code.
 
 import os
 

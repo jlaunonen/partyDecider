@@ -1,13 +1,9 @@
 import dataclasses
-import os
 
-import dotenv
-
-from .utils import parse_bool
+from pydantic import BaseSettings
 
 
-@dataclasses.dataclass
-class Settings:
+class Settings(BaseSettings):
     DEBUG: bool = False
     HOST: str = "0.0.0.0"
     PORT: int = 8192
@@ -26,27 +22,11 @@ class Settings:
     # If not set, Platform.get_steam_root() is used to detect it.
     STEAM_CONFIG_ROOT: str | None = None
 
-
-_env = dotenv.dotenv_values("env")
-
-
-def _interpolate(f: dataclasses.Field) -> bool | int | str:
-    e_val: str | None = os.environ.get(f.name)
-    d_val: str | None = _env.get(f.name)
-    val = e_val or d_val
-    if f.type == bool:
-        return parse_bool(val, f.default)
-    if f.type == int:
-        return int(val) if val is not None else f.default
-    return val if val is not None else f.default
+    class Config:
+        env_file = ["env", "env.txt"]
 
 
-settings = Settings(
-    **{
-        k.name: _interpolate(k)
-        for k in dataclasses.fields(Settings)
-    }  # fmt: skip
-)
+settings = Settings()
 
 
 def get_steam_config_root():

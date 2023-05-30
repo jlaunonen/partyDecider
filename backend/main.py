@@ -92,7 +92,7 @@ def frontend_converter(path: str) -> str | None:
         # In zipapp, we probably don't have dev url at all, but the path is still valid.
         return path
 
-    base_url = config.VITE_DEV_URL + f"?port={settings.PORT}"
+    base_url = config.VITE_DEV_URL
     result_url = urlparse(base_url)._replace(path=path)
     return urlunparse(result_url)
 
@@ -103,22 +103,10 @@ if config.IS_ZIP_APP:
 else:
     static_server = None
     print(
-        "Root path is expecting frontend server to be found at",
-        f"{config.VITE_DEV_URL}?port={settings.PORT}",
+        "Frontend server is expected to be found at\n",
+        f"-  {config.VITE_DEV_URL}   or\n",
+        f"-  {config.VITE_DEV_URL}?port={settings.PORT}  (limited use)",
     )
-
-    @app.get(
-        "/",
-        response_class=RedirectResponse,
-        include_in_schema=False,
-    )
-    async def root() -> RedirectResponse:
-        """
-        Development redirect to HMR frontend.
-        In zipapp, root path is mounted to serve compiled frontend.
-        """
-        url = config.VITE_DEV_URL + f"?port={settings.PORT}"
-        return RedirectResponse(url)
 
     @app.exception_handler(StarletteHTTPException)
     async def not_found_handler(request: Request, exc: StarletteHTTPException):

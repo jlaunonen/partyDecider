@@ -12,9 +12,22 @@
     function imageSrc(app: App): string {
         return resourcesApi.resIcon_Path({appId: app.id});
     }
+    function bannerSrc(app: App): string {
+        return resourcesApi.resHeader_Path({appId: app.id})
+    }
+    function background(app: App): string {
+        if (!app.steamId) {
+            return ""
+        }
+        const gTop = "rgba(255,255,255,0.9)"
+        const gBottom = "rgba(255,255,255,0.7)"
+        const gradient = `linear-gradient(to bottom, ${gTop}, ${gTop}, ${gBottom})`
+        const banner = `center/cover url("${bannerSrc(app)}")`
+        return `${gradient}, ${banner}`
+    }
 </script>
 
-<div draggable="true" class="col-lg-3 col-6 pd-item py-2" use:mountSource data-dragId={item.dragId}>
+<div draggable="true" class="col-lg-3 col-6 pd-item py-2" use:mountSource data-dragId={item.dragId} style:background={background(item.data)}>
     {#if item.data.steamId}
         <img draggable="false" class="float-end" src={imageSrc(item.data)} alt="icon" />
     {/if}
@@ -23,6 +36,7 @@
 
 <style>
     .pd-item {
+        text-shadow: 2px 2px 4px grey;
         border: 1px solid gray;
         border-radius: var(--bs-card-inner-border-radius) var(--bs-card-inner-border-radius) var(--bs-card-inner-border-radius) var(--bs-card-inner-border-radius);
         cursor: move;

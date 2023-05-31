@@ -1,6 +1,7 @@
 const DEBUG = false
 
-const DRAG_MIME = "application/x-dragLib";
+// Lowercase, as mime type is transformed in browser.
+const DRAG_MIME = "application/x-draglib";
 export const DRAG_ID_ATTR = "data-dragId";
 
 
@@ -92,22 +93,33 @@ export class DragTargetManager {
     private overed: RefCountSet = new RefCountSet()
     private dropTargetNodes: Set<HTMLElement> = new Set()
 
+    public disabled = false
+
     onComplete: (dragged: DragElement, onto: DragElement) => void
 
     private dragOver(e: DragEvent, _: HTMLElement) {
+        if (this.disabled || e.dataTransfer.types.indexOf(DRAG_MIME) < 0) {
+            return
+        }
         e.preventDefault()
         e.dataTransfer.dropEffect = "move"
         return false
     }
 
     private handleDragEnter(e: DragEvent, el: HTMLElement) {
+        if (this.disabled || e.dataTransfer.types.indexOf(DRAG_MIME) < 0) {
+            return
+        }
         this.overed.add(el)
         el.classList.add("over")
         // Needed for at least Chrome 112 to avoid randomly failing to proceed to drop.
         e.preventDefault()
     }
 
-    private handleDragLeave(_: DragEvent, el: HTMLElement) {
+    private handleDragLeave(e: DragEvent, el: HTMLElement) {
+        if (this.disabled || e.dataTransfer.types.indexOf(DRAG_MIME) < 0) {
+            return
+        }
         if (this.overed.delete(el)) {
             el.classList.remove("over")
         }
@@ -117,12 +129,17 @@ export class DragTargetManager {
         e.preventDefault()
 
         const dragInfo = e.dataTransfer.getData(DRAG_MIME)
-        const draggedEl = document.querySelector(`[${DRAG_ID_ATTR}="${dragInfo}"]`)
-        const thisInfo = el.getAttribute(DRAG_ID_ATTR)
-        if (DEBUG) console.log("Drop", e, dragInfo)
+        if (DEBUG) console.log("Drop", e, dragInfo, e.dataTransfer.types)
+        if (!dragInfo) {
+            console.error("Unhandled drop:", e)
+            return
+        }
         if (this.overed.delete(el)) {
             el.classList.remove("over")
         }
+
+        const draggedEl = document.querySelector(`[${DRAG_ID_ATTR}="${dragInfo}"]`)
+        const thisInfo = el.getAttribute(DRAG_ID_ATTR)
 
         if (this.onComplete) {
             this.onComplete({

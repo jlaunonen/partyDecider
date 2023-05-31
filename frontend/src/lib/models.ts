@@ -5,7 +5,6 @@ import {
     iterToArray,
     eachToArray,
     eachToMap,
-    MapIdentity,
     repeat,
     mapIterToArray
 } from "./itertools";
@@ -69,7 +68,6 @@ type ItemIdType = string
 type DropTargetType = string
 
 export interface PollProps {
-    items: Map<ItemIdType, ItemInfo>
     itemLevels: Map<ItemIdType, Level>
     targetLevels: Map<DropTargetType, Level>
     levels: Array<Level>
@@ -80,7 +78,6 @@ function copyProps(src: PollProps): PollProps {
     const newLevels = eachToMap(src.levels, (val) => [val, val.copy()])
     const id = newId("state:")
     return {
-        items: eachToMap(src.items, MapIdentity),
         itemLevels: eachToMap(src.itemLevels, (val, key) => [key, newLevels.get(val)]),
         targetLevels: eachToMap(src.targetLevels, (val, key) => [key, newLevels.get(val)]),
         levels: eachToArray(src.levels, (val) => newLevels.get(val)),
@@ -91,39 +88,38 @@ function copyProps(src: PollProps): PollProps {
 }
 
 export class Poll {
-    private get items(): Map<ItemIdType, ItemInfo> { return this.state.items }
     private get itemLevels(): Map<ItemIdType, Level> { return this.state.itemLevels }
     private get targetLevels(): Map<DropTargetType, Level> { return this.state.targetLevels }
     private get levels(): Array<Level> { return this.state.levels }
 
+    private readonly items: ReadonlyMap<ItemIdType, ItemInfo>
     private state: PollProps
 
     constructor(
         appList: Array<App>,
         props: PollProps | undefined = undefined
     ) {
+        this.items = eachToMap(appList, (app) => {
+            const itemId = newId("ii:")
+            return [
+                itemId,
+                new ItemInfo(
+                    app,
+                    itemId
+                )
+            ]
+        })
+
         if (props) {
             this.state = props
         } else {
-            const items = eachToMap(appList, (app) => {
-                const itemId = newId("ii:")
-                return [
-                    itemId,
-                    new ItemInfo(
-                        app,
-                        itemId
-                    )
-                ]
-            })
             const levels: Array<Level> = mapIterToArray(repeat(MIN_LEVEL_COUNT), (index) =>
                 new Level(`${index + 1}.`, index)
             )
-            const noVote = new Level("no vote", -1, iterToArray(items.values()))
+            const noVote = new Level("no vote", -1, iterToArray(this.items.values()))
             levels.push(noVote)
 
             this.state = {
-                items: items,
-
                 levels: levels,
 
                 targetLevels: flatEachToMap(levels, (e) => [

@@ -1,5 +1,6 @@
 <script lang="ts">
     import {mountSource} from "./dragLib"
+    import type {SourceHandlers} from "./dragLib"
     import type {ItemInfo} from "./models"
     import type {ResourcesApi} from "../api"
     import type {App} from "../api"
@@ -7,6 +8,8 @@
     export let item: ItemInfo
 
     export let resourcesApi: ResourcesApi
+
+    export let sourceHandlers: SourceHandlers
 
     // TODO: Make icon display condition to be explicit instead of deducting from missing steamId.
     function imageSrc(app: App): string {
@@ -27,7 +30,7 @@
     }
 </script>
 
-<div draggable="true" class="col-lg-3 col-6 pd-item py-2" use:mountSource data-dragId={item.dragId} style:background={background(item.data)}>
+<div draggable="true" class="col-lg-3 col-6 pd-item py-2" use:mountSource={sourceHandlers} data-dragId={item.dragId} style:background={background(item.data)}>
     {#if item.data.steamId}
         <img draggable="false" class="float-end" src={imageSrc(item.data)} alt="icon" />
     {/if}

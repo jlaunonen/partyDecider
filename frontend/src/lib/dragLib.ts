@@ -9,39 +9,45 @@ function bindEvent<T extends (Event) => boolean | void>(node: HTMLElement, event
     return {eventType, cb}
 }
 
-
-function handleStart(e: DragEvent) {
-    const element = e.target as HTMLElement;
-    element.classList.add("dragging")
-
-    e.dataTransfer.effectAllowed = "move";
-
-    const value = element.getAttribute(DRAG_ID_ATTR)
-    e.dataTransfer.setData(DRAG_MIME, value);
-    e.dataTransfer.setData("text/plain", element.innerText);
-
-    if (DEBUG) console.log("Start:", value, debugElement(element));
+export interface SourceHandlers {
+    onEnd?: (() => void)
 }
 
-export const handlers : {onEnd: (() => void) | null} = {
-    onEnd: null
-}
+class Source {
+    constructor(private readonly handlers: SourceHandlers) {}
 
-function handleEnd(e: DragEvent) {
-    // XXX: Event points to an element whose content and attributes have been (or are being) moved to a new element.
-    // If you log the element, it will show the place where the drag started instead of the end position.
-    const element = e.target as HTMLElement
-    element.classList.remove("dragging")
-    if (DEBUG) console.log("End:", debugElement(this), e)
-    if (handlers.onEnd) {
-        handlers.onEnd()
+    handleStart(e: DragEvent) {
+        const element = e.target as HTMLElement;
+        element.classList.add("dragging")
+
+        e.dataTransfer.effectAllowed = "move";
+
+        const value = element.getAttribute(DRAG_ID_ATTR)
+        e.dataTransfer.setData(DRAG_MIME, value);
+        e.dataTransfer.setData("text/plain", element.innerText);
+
+        if (DEBUG) console.log("Start:", value, debugElement(element));
+    }
+
+    handleEnd(src: HTMLElement, e: DragEvent) {
+        // XXX: Event points to an element whose content and attributes have been (or are being) moved to a new element.
+        // If you log the element, it will show the place where the drag started instead of the end position.
+        const element = e.target as HTMLElement
+        element.classList.remove("dragging")
+        if (DEBUG) console.log("End:", debugElement(src), e)
+        if (this.handlers.onEnd) {
+            this.handlers.onEnd()
+        }
     }
 }
 
-export function mountSource(node: HTMLElement) {
+export function mountSource(node: HTMLElement, handlers: SourceHandlers) {
+    const src = new Source(handlers)
     const listeners = [
-        bindEvent(node, "dragstart", handleStart),
-        bindEvent(node, "dragend", handleEnd),
+        bindEvent(node, "dragstart", src.handleStart),
+        bindEvent(node, "dragend", function (e: DragEvent) {
+            src.handleEnd(this, e)
+        }),
     ]
     return {
         destroy() {

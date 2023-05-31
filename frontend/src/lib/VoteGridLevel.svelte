@@ -1,13 +1,15 @@
 <script lang="ts">
     import VoteGridItem from "./VoteGridItem.svelte";
     import {mountSource} from "./dragLib";
-    import type {DragTargetManager} from "./dragLib";
+    import type {DragTargetManager, SourceHandlers} from "./dragLib";
     import type {Level} from "./models";
     import type {ResourcesApi} from "../api";
 
     export let level: Level
 
     export let dropTargetHandler: DragTargetManager
+
+    export let sourceHandlers: SourceHandlers
 
     const dropTarget = (n) => dropTargetHandler.mount(n)
 
@@ -20,12 +22,12 @@
 
 <div class="card">
     <div class="row pd-row g-0" use:dropTarget data-dragId={level.dropId}>
-        <div draggable="true" class="col-xl-1 col-2 pd-head py-2 card-header" use:mountSource data-dragId={level.dropId}>{level.name}</div>
+        <div draggable="true" class="col-xl-1 col-2 pd-head py-2 card-header" use:mountSource={sourceHandlers} data-dragId={level.dropId}>{level.name}</div>
         <div class="col">
             <div class="card-body">
                 <div class="row px-2">
                     {#each level.items as el}
-                        <VoteGridItem item={el} resourcesApi={resourcesApi} />
+                        <VoteGridItem item={el} resourcesApi={resourcesApi} sourceHandlers={sourceHandlers} />
                     {/each}
                 </div>
             </div>

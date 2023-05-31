@@ -1,7 +1,8 @@
 <script lang="ts">
     import VoteGridLevel from "./VoteGridLevel.svelte"
-    import {DragTargetManager, handlers} from "./dragLib"
+    import {DragTargetManager} from "./dragLib"
     import {Poll} from "./models"
+    import type {SourceHandlers} from "./dragLib"
     import type {Level} from "./models"
     import type {PollProps} from "./models"
 
@@ -35,9 +36,11 @@
 
     export let ballot: Map<number, number> = new Map()
 
-    handlers.onEnd = () => {
-        voteGrid = poll.getLevels()
-        ballot = poll.getBallot()
+    const sourceHandlers: SourceHandlers = {
+        onEnd: () => {
+            voteGrid = poll.getLevels()
+            ballot = poll.getBallot()
+        }
     }
 
     const dropTargetHandler = new DragTargetManager();
@@ -98,7 +101,7 @@
         </div>
     {:then _}
         {#each voteGrid as level}
-            <VoteGridLevel level={level} dropTargetHandler={dropTargetHandler} resourcesApi={resourcesApi} />
+            <VoteGridLevel level={level} dropTargetHandler={dropTargetHandler} sourceHandlers={sourceHandlers} resourcesApi={resourcesApi} />
         {/each}
     {/await}
     {#if poll && IS_DEVELOPMENT}

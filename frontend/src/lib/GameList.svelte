@@ -89,6 +89,8 @@
         <ul id="games" class="list-group list-group-flush">
             {#each games as game}<!-- type: AppInfo -->
                 {@const id = "enable-" + game.id}
+                <!-- This on:click is only to help mouse usage. The control used by keyboard is the input below. -->
+                <!-- svelte-ignore a11y-click-events-have-key-events -->
                 <li class="list-group-item" data-target={id} on:click={toggle}>
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" value="" checked={game.enabled} id={id} on:click={noBubble} />

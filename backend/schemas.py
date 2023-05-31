@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from pydantic import BaseModel
 
 from .pd_types import VoteTarget, Vote
@@ -44,6 +45,8 @@ class VotingSession(BaseModel):
     key: str
     ends_at: int | None
     name: str | None
+    created_at: str
+    closed: bool
 
     class Config:
         orm_mode = True
@@ -79,4 +82,7 @@ class VotingItem(App):
 
 
 class VotingSessionResult(VotingSession):
-    items: list[VotingItem]
+    ballot: dict[VoteTarget, Vote] | None
+    has_voted: bool | None
+    responses: int
+    items: list[VotingItem] | None

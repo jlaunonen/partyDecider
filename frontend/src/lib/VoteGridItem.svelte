@@ -11,6 +11,8 @@
 
     export let sourceHandlers: SourceHandlers
 
+    export let disabled = false
+
     // TODO: Make icon display condition to be explicit instead of deducting from missing steamId.
     function imageSrc(app: App): string {
         return resourcesApi.resIcon_Path({appId: app.id});
@@ -30,7 +32,7 @@
     }
 </script>
 
-<div draggable="true" class="col-lg-3 col-6 pd-item py-2" use:mountSource={sourceHandlers} data-dragId={item.dragId} style:background={background(item.data)}>
+<div draggable={disabled ? "" : "true"} class="col-lg-3 col-6 pd-item py-2" use:mountSource={sourceHandlers} data-dragId={item.dragId} style:background={background(item.data)}>
     {#if item.data.steamId}
         <img draggable="false" class="float-end" src={imageSrc(item.data)} alt="icon" />
     {/if}
@@ -42,6 +44,8 @@
         text-shadow: 2px 2px 4px grey;
         border: 1px solid gray;
         border-radius: var(--bs-card-inner-border-radius) var(--bs-card-inner-border-radius) var(--bs-card-inner-border-radius) var(--bs-card-inner-border-radius);
+    }
+    .pd-item[draggable=true] {
         cursor: move;
     }
     .pd-item:global(.dragging) {

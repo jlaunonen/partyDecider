@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 import signal
 from typing import Annotated
@@ -6,7 +7,7 @@ import anyio
 from fastapi import APIRouter, Body, Depends, HTTPException, Query
 
 from . import crud, schemas
-from .dependencies import Database, VoteSessionManager, require_admin
+from .dependencies import Database, VoteSessionManager, VotingSession, require_admin
 from .vdf.game_gatherer import main as game_gatherer
 
 
@@ -88,7 +89,18 @@ async def shutdown() -> schemas.Message:
     "/voting",
 )
 async def add_voting_session(
-    db: Database, sessions: VoteSessionManager, parameters: Annotated[schemas.NewVotingSession, Body()]
+    db: Database,
+    sessions: VoteSessionManager,
+    parameters: Annotated[schemas.NewVotingSession, Body()],
 ) -> schemas.VotingSession:
     apps = crud.get_apps(db, lambda app: app.enabled)
     return schemas.VotingSession.from_orm(sessions.new_session(apps, parameters))
+
+
+@router.post(
+    "/voting/{vote_session_key}/close",
+)
+async def close_session(session: VotingSession) -> schemas.Message:
+    session.closed = True
+
+    return schemas.Message.ok()

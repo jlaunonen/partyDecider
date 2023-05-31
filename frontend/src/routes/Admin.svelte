@@ -1,11 +1,14 @@
 <script>
-    import GameList from "../lib/GameList.svelte";
-    import Shutdown from "../lib/Shutdown.svelte";
-    import RescanSteam from "../lib/RescanSteam.svelte";
-    import AddPoll from "../lib/AddPoll.svelte";
+    import GameList from "../lib/GameList.svelte"
+    import Shutdown from "../lib/Shutdown.svelte"
+    import RescanSteam from "../lib/RescanSteam.svelte"
+    import AddPoll from "../lib/AddPoll.svelte"
+    import ManagePolls from "../lib/ManagePolls.svelte"
 </script>
 
 <AddPoll />
+
+<ManagePolls />
 
 <GameList asAdmin={true}/>
 

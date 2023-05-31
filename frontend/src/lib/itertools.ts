@@ -24,11 +24,29 @@ export function eachToMap<K, V, RK, RV>(src: ForEachable<K, V>, map: (val: V, ke
     return r
 }
 
+export function eachToSet<K, V, RV>(src: ForEachable<K, V>, map: (val: V, key: K) => RV): Set<RV> {
+    const r = new Set<RV>()
+    src.forEach((val, key) => {
+        const v = map(val, key)
+        r.add(v)
+    })
+    return r
+}
+
 export function eachToObject<K, V, RV>(src: ForEachable<K, V>, map: (val: V, key: K) => [string, RV]): Record<string, RV> {
     const r = {}
     src.forEach((val, key) => {
         const [k, v] = map(val, key)
         r[k] = v
+    })
+    return r
+}
+
+export function objectToMap<K, V, RV>(src: Record<string, V>, map: (val: V, key: string) => [K, RV]): Map<K, RV> {
+    const r = new Map<K, RV>()
+    Object.entries(src).forEach(([key, val]) => {
+        const [k, v] = map(val, key)
+        r.set(k, v)
     })
     return r
 }

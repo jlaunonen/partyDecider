@@ -12,6 +12,8 @@
     import {joinToString, PairToString} from "./itertools.js";
     import {IS_DEVELOPMENT} from "./build.js";
 
+    export let disabled = false
+
     const api = new PublicApi(apiConfig)
     const resourcesApi = new ResourcesApi(apiConfig)
 
@@ -35,6 +37,20 @@
     let promise = fetchGames();
 
     export let ballot: Map<number, number> = new Map()
+    export let populate: Map<number, number> = undefined
+
+    async function populateFromBallot(b: Map<number, number>) {
+        if (b === undefined) {
+            return
+        }
+        await promise
+        const newState = poll.createState(b)
+        poll.setState(newState)
+        voteGrid = poll.getLevels()
+        history.replaceWith(poll.copy())
+        updateButtons()
+    }
+    $: populateFromBallot(populate)
 
     const sourceHandlers: SourceHandlers = {
         onEnd: () => {
@@ -50,6 +66,8 @@
             updateButtons()
         }
     }
+
+    $: dropTargetHandler.disabled = disabled
 
     function undo() {
         const newState = history.undo()
@@ -73,8 +91,8 @@
     let redoDisabled = true
 
     function updateButtons() {
-        undoDisabled = !history.canUndo()
-        redoDisabled = !history.canRedo()
+        undoDisabled = disabled || !history.canUndo()
+        redoDisabled = disabled || !history.canRedo()
     }
 
     function collapse() {
@@ -88,12 +106,14 @@
 </script>
 
 <div class="container my-4">
-    <div class="btn-group" role="group">
-        <button type="button" class="btn btn-secondary" disabled={undoDisabled} on:click={undo}>Undo</button>
-        <button type="button" class="btn btn-secondary" disabled={redoDisabled} on:click={redo}>Redo</button>
-    </div>
-    <div class="btn-group" role="group">
-        <button type="button" class="btn btn-outline-secondary" on:click={collapse}>Collapse empty</button>
+    <div class="row row-cols-auto">
+        <div class="col btn-group" role="group">
+            <button type="button" class="btn btn-secondary" disabled={undoDisabled} on:click={undo}>Undo</button>
+            <button type="button" class="btn btn-secondary" disabled={redoDisabled} on:click={redo}>Redo</button>
+        </div>
+        <div class="col btn-group" role="group">
+            <button type="button" class="btn btn-outline-secondary" on:click={collapse}>Collapse empty</button>
+        </div>
     </div>
     {#await promise}
         <div class="text-muted">
@@ -101,7 +121,7 @@
         </div>
     {:then _}
         {#each voteGrid as level}
-            <VoteGridLevel level={level} dropTargetHandler={dropTargetHandler} sourceHandlers={sourceHandlers} resourcesApi={resourcesApi} />
+            <VoteGridLevel {level} {dropTargetHandler} {sourceHandlers} {resourcesApi} {disabled} />
         {/each}
     {/await}
     {#if poll && IS_DEVELOPMENT}
@@ -109,7 +129,9 @@
         <!--suppress CommaExpressionJS -->
         <div>Ballot: {voteGrid, joinToString(poll.getBallot(), PairToString)}</div>
     {/if}
-    <slot name="submit" />
+    {#if !disabled}
+        <slot name="submit" />
+    {/if}
 </div>
 
 <style>

@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "bootstrap": "^5.2.3",
+    "date-fns": "^2.30.0",
     "svelte-routing": "^1.8.0"
   },
   "optionalDependencies": {

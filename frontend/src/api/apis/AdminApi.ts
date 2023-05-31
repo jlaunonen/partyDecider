@@ -38,6 +38,10 @@ export interface AddVotingSessionRequest {
     newVotingSession: NewVotingSession;
 }
 
+export interface CloseSessionRequest {
+    voteSessionKey: string;
+}
+
 export interface SetEnabledRequest {
     requestBody: Array<number>;
     bySteamId?: boolean;
@@ -100,6 +104,49 @@ export class AdminApi extends runtime.BaseAPI {
      */
     async addVotingSession(requestParameters: AddVotingSessionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<VotingSession> {
         const response = await this.addVotingSessionRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    closeSession_Path(requestParameters: CloseSessionRequest): string {
+        if (requestParameters.voteSessionKey === null || requestParameters.voteSessionKey === undefined) {
+            throw new runtime.RequiredError('voteSessionKey','Required parameter requestParameters.voteSessionKey was null or undefined when calling closeSession.');
+        }
+
+        const queryParameters: any = {};
+
+
+        const path = `/api/admin/voting/{vote_session_key}/close`.replace(`{${"vote_session_key"}}`, encodeURIComponent(String(requestParameters.voteSessionKey)));
+
+        return this.configuration.basePath + path + this.makeQueryParameters(queryParameters);
+    }
+
+    /**
+     * Close Session
+     */
+    async closeSessionRaw(requestParameters: CloseSessionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Message>> {
+        if (requestParameters.voteSessionKey === null || requestParameters.voteSessionKey === undefined) {
+            throw new runtime.RequiredError('voteSessionKey','Required parameter requestParameters.voteSessionKey was null or undefined when calling closeSession.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/api/admin/voting/{vote_session_key}/close`.replace(`{${"vote_session_key"}}`, encodeURIComponent(String(requestParameters.voteSessionKey))),
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => MessageFromJSON(jsonValue));
+    }
+
+    /**
+     * Close Session
+     */
+    async closeSession(requestParameters: CloseSessionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Message> {
+        const response = await this.closeSessionRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

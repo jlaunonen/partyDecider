@@ -14,6 +14,8 @@
     const dropTarget = (n) => dropTargetHandler.mount(n)
 
     export let resourcesApi: ResourcesApi
+
+    export let disabled = false
 </script>
 
 <div class="row pd-sep align-items-center" use:dropTarget data-dragId={level.upOneDropId}>
@@ -22,12 +24,12 @@
 
 <div class="card">
     <div class="row pd-row g-0" use:dropTarget data-dragId={level.dropId}>
-        <div draggable="true" class="col-xl-1 col-2 pd-head py-2 card-header" use:mountSource={sourceHandlers} data-dragId={level.dropId}>{level.name}</div>
+        <div draggable={disabled ? "" : "true"} class="col-xl-1 col-2 pd-head py-2 card-header" use:mountSource={sourceHandlers} data-dragId={level.dropId}>{level.name}</div>
         <div class="col">
             <div class="card-body">
                 <div class="row px-2">
                     {#each level.items as el}
-                        <VoteGridItem item={el} resourcesApi={resourcesApi} sourceHandlers={sourceHandlers} />
+                        <VoteGridItem item={el} {resourcesApi} {sourceHandlers} {disabled} />
                     {/each}
                 </div>
             </div>
@@ -41,6 +43,8 @@
         border: 2px solid #0000;
         border-right: var(--bs-card-border-width) solid var(--bs-card-border-color);
         border-radius: var(--bs-card-inner-border-radius) 0 0 var(--bs-card-inner-border-radius);
+    }
+    .pd-head[draggable=true] {
         cursor: move;
     }
 

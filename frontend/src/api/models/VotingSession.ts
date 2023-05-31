@@ -37,6 +37,18 @@ export interface VotingSession {
      * @memberof VotingSession
      */
     name?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof VotingSession
+     */
+    createdAt: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof VotingSession
+     */
+    closed: boolean;
 }
 
 /**
@@ -45,6 +57,8 @@ export interface VotingSession {
 export function instanceOfVotingSession(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "key" in value;
+    isInstance = isInstance && "createdAt" in value;
+    isInstance = isInstance && "closed" in value;
 
     return isInstance;
 }
@@ -62,6 +76,8 @@ export function VotingSessionFromJSONTyped(json: any, ignoreDiscriminator: boole
         'key': json['key'],
         'endsAt': !exists(json, 'ends_at') ? undefined : json['ends_at'],
         'name': !exists(json, 'name') ? undefined : json['name'],
+        'createdAt': json['created_at'],
+        'closed': json['closed'],
     };
 }
 
@@ -77,6 +93,8 @@ export function VotingSessionToJSON(value?: VotingSession | null): any {
         'key': value.key,
         'ends_at': value.endsAt,
         'name': value.name,
+        'created_at': value.createdAt,
+        'closed': value.closed,
     };
 }
 

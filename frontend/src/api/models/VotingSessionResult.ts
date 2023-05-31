@@ -46,10 +46,40 @@ export interface VotingSessionResult {
     name?: string;
     /**
      * 
+     * @type {string}
+     * @memberof VotingSessionResult
+     */
+    createdAt: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof VotingSessionResult
+     */
+    closed: boolean;
+    /**
+     * 
+     * @type {{ [key: string]: number; }}
+     * @memberof VotingSessionResult
+     */
+    ballot?: { [key: string]: number; };
+    /**
+     * 
+     * @type {boolean}
+     * @memberof VotingSessionResult
+     */
+    hasVoted?: boolean;
+    /**
+     * 
+     * @type {number}
+     * @memberof VotingSessionResult
+     */
+    responses: number;
+    /**
+     * 
      * @type {Array<VotingItem>}
      * @memberof VotingSessionResult
      */
-    items: Array<VotingItem>;
+    items?: Array<VotingItem>;
 }
 
 /**
@@ -58,7 +88,9 @@ export interface VotingSessionResult {
 export function instanceOfVotingSessionResult(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "key" in value;
-    isInstance = isInstance && "items" in value;
+    isInstance = isInstance && "createdAt" in value;
+    isInstance = isInstance && "closed" in value;
+    isInstance = isInstance && "responses" in value;
 
     return isInstance;
 }
@@ -76,7 +108,12 @@ export function VotingSessionResultFromJSONTyped(json: any, ignoreDiscriminator:
         'key': json['key'],
         'endsAt': !exists(json, 'ends_at') ? undefined : json['ends_at'],
         'name': !exists(json, 'name') ? undefined : json['name'],
-        'items': ((json['items'] as Array<any>).map(VotingItemFromJSON)),
+        'createdAt': json['created_at'],
+        'closed': json['closed'],
+        'ballot': !exists(json, 'ballot') ? undefined : json['ballot'],
+        'hasVoted': !exists(json, 'has_voted') ? undefined : json['has_voted'],
+        'responses': json['responses'],
+        'items': !exists(json, 'items') ? undefined : ((json['items'] as Array<any>).map(VotingItemFromJSON)),
     };
 }
 
@@ -92,7 +129,12 @@ export function VotingSessionResultToJSON(value?: VotingSessionResult | null): a
         'key': value.key,
         'ends_at': value.endsAt,
         'name': value.name,
-        'items': ((value.items as Array<any>).map(VotingItemToJSON)),
+        'created_at': value.createdAt,
+        'closed': value.closed,
+        'ballot': value.ballot,
+        'has_voted': value.hasVoted,
+        'responses': value.responses,
+        'items': value.items === undefined ? undefined : ((value.items as Array<any>).map(VotingItemToJSON)),
     };
 }
 

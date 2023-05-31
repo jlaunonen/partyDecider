@@ -5,6 +5,7 @@ import {
     iterToArray,
     eachToArray,
     eachToMap,
+    eachToSet,
     repeat,
     mapIterToArray
 } from "./itertools";
@@ -119,19 +120,27 @@ export class Poll {
             const noVote = new Level("no vote", -1, iterToArray(this.items.values()))
             levels.push(noVote)
 
-            this.state = {
-                levels: levels,
-
-                targetLevels: flatEachToMap(levels, (e) => [
-                    [e.dropId, e],
-                    [e.upOneDropId, e],
-                ]),
-
-                itemLevels: flatEachToMap(levels, (level) =>
-                    level.items.map((e) => [e.dragId, level])
-                ),
-            }
+            this.state = Poll.makeStateFromLevels(levels, "initial")
             if (DEBUG) console.log(this.state)
+        }
+    }
+
+    private static makeStateFromLevels(levels: Array<Level>, ident: string): PollProps {
+        return {
+            levels: levels,
+
+            targetLevels: flatEachToMap(levels, (e) => [
+                [e.dropId, e],
+                [e.upOneDropId, e],
+            ]),
+
+            itemLevels: flatEachToMap(levels, (level) =>
+                level.items.map((e) => [e.dragId, level])
+            ),
+
+            toString(): string {
+                return ident
+            },
         }
     }
 
@@ -145,6 +154,47 @@ export class Poll {
 
     getLevels(): Array<Level> {
         return this.levels
+    }
+
+    createState(ballot: Map<number, number>): PollProps {
+        const appIdToItemId = eachToMap(this.items, (info, key) => [
+            info.data.id, key
+        ])
+
+        // Collapse all votes for same levels by using Set, then convert them to Array and sort ascending.
+        const voteLevels = eachToArray(eachToSet(ballot, (val) => val), Identity)
+        voteLevels.sort()
+
+        const levels: Array<Level> = mapIterToArray(repeat(Math.max(MIN_LEVEL_COUNT, voteLevels.length)), (index) =>
+            new Level(`${index + 1}.`, index)
+        )
+        const itemsByItemId = eachToMap(this.items, (e) => [e.dragId, e])
+
+        ballot.forEach((voteValue, appId) => {
+            const voteItemId = appIdToItemId.get(appId)
+
+            const voteLevelIndex = voteLevels.indexOf(voteValue)
+            if (voteLevelIndex >= 0) {
+                const voteLevel = levels[voteLevelIndex]
+
+                const itemInfo = itemsByItemId.get(voteItemId)
+                if (!itemInfo) {
+                    throw `Multiple votes for ${voteItemId}`
+                }
+                itemsByItemId.delete(voteItemId)
+
+                voteLevel.items.push(itemInfo)
+            } else {
+                // TODO: This might need to be removed / ignored.
+                throw `Vote not found in items: ${appId} @ ${voteValue}`
+            }
+        })
+
+        // Put available items that were not assigned any Level to "no vote" Level.
+        const noVote = new Level("no vote", -1, iterToArray(itemsByItemId.values()))
+        levels.push(noVote)
+
+        return Poll.makeStateFromLevels(levels, "ballot")
     }
 
     getBallot(): Map<number, number> {

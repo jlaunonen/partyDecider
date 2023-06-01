@@ -123,7 +123,7 @@ export class AdminApi extends runtime.BaseAPI {
     /**
      * Close Session
      */
-    async closeSessionRaw(requestParameters: CloseSessionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Message>> {
+    async closeSessionRaw(requestParameters: CloseSessionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<VotingSession>> {
         if (requestParameters.voteSessionKey === null || requestParameters.voteSessionKey === undefined) {
             throw new runtime.RequiredError('voteSessionKey','Required parameter requestParameters.voteSessionKey was null or undefined when calling closeSession.');
         }
@@ -139,13 +139,13 @@ export class AdminApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => MessageFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => VotingSessionFromJSON(jsonValue));
     }
 
     /**
      * Close Session
      */
-    async closeSession(requestParameters: CloseSessionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Message> {
+    async closeSession(requestParameters: CloseSessionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<VotingSession> {
         const response = await this.closeSessionRaw(requestParameters, initOverrides);
         return await response.value();
     }

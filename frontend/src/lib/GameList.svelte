@@ -1,4 +1,5 @@
 <script lang="ts">
+    import "./extra.css"
     import {apiConfig} from "../network"
     import {AdminApi, ResourcesApi} from "../api"
     import type {App} from "../api"
@@ -80,7 +81,7 @@
         vertical-align: baseline;
     }
     .list-group-item:has(input:checked) {
-        background-color: #19875440;
+        background-color: var(--my-success-light);
     }
 
     /*

@@ -100,7 +100,7 @@ async def add_voting_session(
 @router.post(
     "/voting/{vote_session_key}/close",
 )
-async def close_session(session: VotingSession) -> schemas.Message:
+async def close_session(session: VotingSession) -> schemas.VotingSession:
     session.closed = True
 
-    return schemas.Message.ok()
+    return session

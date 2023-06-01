@@ -34,20 +34,7 @@
     }
 
     function imageSrc(app: App): string {
-        return resourcesApi.resIcon_Path({appId: app.id, asAdmin: asAdmin});
-    }
-
-    function toggle(this: HTMLElement, _: PointerEvent) {
-        const id = this.getAttribute("data-target")
-        if (id) {
-            const cb = document.getElementById(id) as HTMLInputElement
-            cb.checked = !cb.checked
-        }
-    }
-
-    function noBubble(e: Event) {
-        // Stop event from bubbling and toggle() to be called, causing the checkbox to be toggled twice.
-        e.stopPropagation()
+        return resourcesApi.resIcon_Path({appId: app.id, asAdmin: asAdmin})
     }
 
     async function updateByOnlyEnabled(only: boolean): Promise<Array<AppInfo>> {
@@ -72,16 +59,11 @@
     {:then games}
         <ul id="games" class="list-group list-group-flush">
             {#each games as game}<!-- type: AppInfo -->
-                {@const id = "enable-" + game.id}
-                <!-- This on:click is only to help mouse usage. The control used by keyboard is the input below. -->
-                <!-- svelte-ignore a11y-click-events-have-key-events -->
-                <li class="list-group-item" data-target={id} on:click={toggle}>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="" checked={game.enabled} id={id} on:click={noBubble} />
-                        <label for={id}>
-                            <img src={game.iconUrl} alt="icon"/> {game.name}
-                        </label>
-                    </div>
+                <li class="list-group-item">
+                    <label class="form-check">
+                        <input class="form-check-input" type="checkbox" value="" checked={game.enabled} id={"enable-" + game.id} />
+                        <img src={game.iconUrl} alt="icon"/> {game.name}
+                    </label>
                 </li>
             {:else}
                 <li class="list-group-item text-danger">No games</li>
@@ -99,5 +81,23 @@
     }
     .list-group-item:has(input:checked) {
         background-color: #19875440;
+    }
+
+    /*
+    Bootstrap expects checkbox label to be next to input:checkbox, but we wrap whole row/li
+    with <label> to make the row clickable and easier to use with mouse.
+    These values try to mimic the original
+    <li.list-group-item> <div.form-check> <input.form-check-input/> <label>..</label> </div> </li>
+    layout.
+    */
+    li.list-group-item {
+        padding: 0;
+    }
+    li.list-group-item label {
+        padding: var(--bs-list-group-item-padding-y) var(--bs-list-group-item-padding-x);
+    }
+    li.list-group-item label input.form-check-input {
+        margin-left: 0;
+        margin-right: 0.5em;
     }
 </style>

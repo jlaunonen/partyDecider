@@ -6,11 +6,17 @@
     import ManagePolls from "../lib/ManagePolls.svelte"
 </script>
 
-<AddPoll />
+<div class="mb-5">
+    <AddPoll />
+</div>
 
-<ManagePolls />
+<div class="mb-5">
+    <ManagePolls />
+</div>
 
-<GameList asAdmin={true}/>
+<div class="mb-5">
+    <GameList asAdmin={true}/>
+</div>
 
 <RescanSteam />
 

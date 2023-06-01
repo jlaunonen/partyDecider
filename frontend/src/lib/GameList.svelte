@@ -1,43 +1,29 @@
 <script lang="ts">
-    import {apiConfig} from "../network";
-    import {AdminApi, ResourcesApi} from "../api";
-    import type {App} from "../api";
+    import {apiConfig} from "../network"
+    import {AdminApi, ResourcesApi} from "../api"
+    import type {App} from "../api"
 
     /** Is this component displayed in admin site? */
     export let asAdmin = false
 
-    const api = new AdminApi(apiConfig);
-    const resourcesApi = new ResourcesApi(apiConfig);
+    const api = new AdminApi(apiConfig)
+    const resourcesApi = new ResourcesApi(apiConfig)
 
-    class AppInfo {
-        constructor(
-            readonly id: number,
-            readonly name: string,
-            readonly steamId: number,
-            readonly iconUrl: string,
-            readonly enabled: boolean,
-        ) {
-        }
+    interface AppSupplement {
+        iconUrl: string
     }
+    type AppInfo = App & AppSupplement
 
     let allAppInfos: Array<AppInfo> = []
 
     async function fetchGames(): Promise<Array<AppInfo>> {
         const allApps = await api.getAll()
-        allApps.sort((a, b) => a.name > b.name ? 1 : a.name < b.name ? -1 : 0);
+        allApps.sort((a, b) => a.name > b.name ? 1 : a.name < b.name ? -1 : 0)
 
-        const enabledArray = await api.getEnabled()
-        const enabledIdSet = new Set<number>(
-            enabledArray.map((e) => e.id)
-        )
-
-        allAppInfos = allApps.map((e) => new AppInfo(
-            e.id,
-            e.name,
-            e.steamId,
-            imageSrc(e),
-            enabledIdSet.has(e.id),
-        ))
+        allAppInfos = allApps.map((e) => ({
+            ...e,
+            iconUrl: imageSrc(e),
+        }))
         return allAppInfos
     }
 
@@ -73,14 +59,12 @@
     }
 </script>
 
+<h3>Enabled apps <small><button type="button" class="btn btn-link" on:click={updateGames}>Refresh</button></small></h3>
 <div class="card">
     <div class="card-header">
-        <div>
-            Games from backend <button type="button" class="btn btn-link" on:click={updateGames}>Refresh</button>
-        </div>
         <div class="form-check">
             <input class="form-check-input" type="checkbox" value="" id="onlyEnabled" on:change={onOnlyEnabled}/>
-            <label for="onlyEnabled">Show only enabled games</label>
+            <label for="onlyEnabled">Show only enabled apps</label>
         </div>
     </div>
     {#await promise}

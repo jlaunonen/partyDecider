@@ -21,7 +21,8 @@
     }
 </script>
 
-<form class="mb-5" on:submit={submit}>
+<h3>Add new poll</h3>
+<form on:submit={submit}>
     <div class="mb-3">
         <label for="poll-name" class="form-label">Poll name (optional)</label>
         <input type="text" class="form-control" id="poll-name" maxlength="100" bind:value={formName}/>

@@ -1,8 +1,8 @@
 <script lang="ts">
     import {AdminApi, PublicApi} from "../api"
     import {apiConfig} from "../network"
-    import parseISO from "date-fns/parseISO"
-    import format from "date-fns/format"
+    import NoPolls from "./NoPolls.svelte"
+    import {formatTime} from "./utils"
 
     const api = new PublicApi(apiConfig)
     const adminApi = new AdminApi(apiConfig)
@@ -16,16 +16,12 @@
         })
         getList = api.getVotingList()
     }
-
-    function formatTime(dateTime: string): string {
-        return format(parseISO(dateTime), "PPpp")
-    }
 </script>
 
-<div>
-    <h3>Polls</h3>
-    <ul>
-        {#await getList then list}
+<h3>Polls</h3>
+{#await getList then list}
+    {#if list.length > 0}
+        <ul>
             {#each list as item}
                 <li>
                     {#if item.closed}
@@ -36,6 +32,8 @@
                     {item.name ?? item.key} (<span class="date">{formatTime(item.createdAt)}</span>)
                 </li>
             {/each}
-        {/await}
-    </ul>
-</div>
+        </ul>
+    {:else}
+        <NoPolls/>
+    {/if}
+{/await}

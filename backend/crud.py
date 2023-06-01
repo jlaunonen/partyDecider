@@ -12,6 +12,7 @@ def get_apps(
             id=app.id,
             steam_id=app.steam_id,
             name=app.name,
+            enabled=app.enabled,
         )
         for app in session.db.apps.values()
         if flt(app)

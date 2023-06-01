@@ -37,6 +37,12 @@ export interface App {
      * @memberof App
      */
     name: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof App
+     */
+    enabled?: boolean;
 }
 
 /**
@@ -63,6 +69,7 @@ export function AppFromJSONTyped(json: any, ignoreDiscriminator: boolean): App {
         'id': json['id'],
         'steamId': !exists(json, 'steam_id') ? undefined : json['steam_id'],
         'name': json['name'],
+        'enabled': !exists(json, 'enabled') ? undefined : json['enabled'],
     };
 }
 
@@ -78,6 +85,7 @@ export function AppToJSON(value?: App | null): any {
         'id': value.id,
         'steam_id': value.steamId,
         'name': value.name,
+        'enabled': value.enabled,
     };
 }
 

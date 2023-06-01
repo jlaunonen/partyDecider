@@ -57,9 +57,6 @@ class VotingSession:
 class SessionManager:
     def __init__(self):
         self.sessions: dict[str, VotingSession] = {}
-        self._add(
-            VotingSession(None, "Test", [], key="test-uuid")
-        )  # TODO: Remove default test session
 
     def _add(self, session: VotingSession) -> VotingSession:
         self.sessions[session.key] = session

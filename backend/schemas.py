@@ -25,6 +25,7 @@ class App(BaseModel):
     id: int
     steam_id: int | None
     name: str
+    enabled: bool = True
 
     class Config:
         schema_extra = {
@@ -32,6 +33,7 @@ class App(BaseModel):
                 "id": 15,
                 "steam_id": 620,
                 "name": "Portal 2",
+                "enabled": True,
             },
         }
 

@@ -39,6 +39,12 @@ export interface VotingItem {
     name: string;
     /**
      * 
+     * @type {boolean}
+     * @memberof VotingItem
+     */
+    enabled?: boolean;
+    /**
+     * 
      * @type {number}
      * @memberof VotingItem
      */
@@ -69,6 +75,7 @@ export function VotingItemFromJSONTyped(json: any, ignoreDiscriminator: boolean)
         'id': json['id'],
         'steamId': !exists(json, 'steam_id') ? undefined : json['steam_id'],
         'name': json['name'],
+        'enabled': !exists(json, 'enabled') ? undefined : json['enabled'],
         'score': !exists(json, 'score') ? undefined : json['score'],
     };
 }
@@ -85,6 +92,7 @@ export function VotingItemToJSON(value?: VotingItem | null): any {
         'id': value.id,
         'steam_id': value.steamId,
         'name': value.name,
+        'enabled': value.enabled,
         'score': value.score,
     };
 }

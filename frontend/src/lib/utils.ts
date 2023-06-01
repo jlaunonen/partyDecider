@@ -44,6 +44,7 @@ export abstract class BaseSubmitHandler {
     private reEnableSubmit() {
         this.submitBtn.disabled = false
         this.replaceClasses("btn-primary")
+        this.onAfterTimeout()
     }
 
     protected abstract doSubmit()
@@ -55,4 +56,6 @@ export abstract class BaseSubmitHandler {
     protected onError(err: Error): boolean {
         return false
     }
+
+    protected onAfterTimeout() {}
 }

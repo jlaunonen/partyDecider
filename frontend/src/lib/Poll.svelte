@@ -6,6 +6,7 @@
     import {apiConfig} from "../network";
     import {IS_DEVELOPMENT} from "./build";
     import PollResultTable from "./PollResultTable.svelte";
+    import {BaseSubmitHandler} from "./utils";
 
     export let pollId: string
 
@@ -14,14 +15,12 @@
     /** Bound to VoteGrid - consumed by it. */
     let populate: Map<number, number>
 
-    let saved = false
-
     const api = new PublicApi(apiConfig)
 
-    async function submitBallot() {
-        this.disabled = true
+    const submitHandler = new class extends BaseSubmitHandler {
+        private submitTextSave = ""
 
-        try {
+        protected async doSubmit() {
             // Convert ballot from number:number to object with string:number type.
             const strBallot = eachToObject(ballot, (v, k) => [k.toString(), v])
 
@@ -31,11 +30,16 @@
                     ballot: strBallot
                 },
             })
-            saved = true
-
             await getResults()
-        } catch (e) {
-            this.disabled = false
+        }
+
+        protected onSuccess() {
+            this.submitTextSave = this.submitBtn.innerText
+            this.submitBtn.innerText = "Saved"
+        }
+
+        protected onAfterTimeout() {
+            this.submitBtn.innerText = this.submitTextSave
         }
     }
 
@@ -84,11 +88,11 @@
     {#if !result.closed || result.hasVoted}
         <VoteGrid bind:ballot bind:populate disabled={result.closed}>
             <div slot="submit">
-                {#if saved}
-                    <button type="button" class="btn btn-success" disabled>Saved</button>
-                {:else}
-                    <button type="button" class="btn btn-primary" on:click={submitBallot}>Submit</button>
-                {/if}
+                <button type="button" class="btn btn-primary"
+                    bind:this={submitHandler.submitBtn}
+                    on:click={(e) => submitHandler.submit(e)}>
+                    Submit
+                </button>
                 {#if ballot && IS_DEVELOPMENT}
                     From sub component: {joinToString(ballot, PairToString)}
                 {/if}
